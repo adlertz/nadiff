@@ -1,0 +1,6 @@
+*.o
+*.d
+nadiff
+tags
+*.out
+*.files

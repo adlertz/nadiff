@@ -1,0 +1,31 @@
+= README
+
+== How to build
+
+    make
+
+    sudo make install
+    (installs to /usr/local/bin/)
+
+== How to use
+
+    git diff | nadiff
+
+    git diff --staged | nadiff
+
+    git diff HEAD | nadiff
+
+    git diff HEAD~1..HEAD | nadiff
+
+    You get the point.
+
+
+== Navigate
+
+    n Next diff
+    N Previous diff
+    a Scroll up in left diff view
+    z Scroll down in left diff view
+    s Scroll up in right diff view
+    x Scroll down in right diff view
+    q Quit
