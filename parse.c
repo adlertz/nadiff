@@ -203,6 +203,69 @@ read_delete_line(struct line * l)
         && is_char_at_idx(l, i++, 'e');
 }
 
+static bool
+is_similarity_index_line(struct line * l)
+{
+    if (l->data == NULL)
+        return false;
+
+    unsigned i = 0;
+    return is_char_at_idx(l, i++, 's')
+        && is_char_at_idx(l, i++, 'i')
+        && is_char_at_idx(l, i++, 'm')
+        && is_char_at_idx(l, i++, 'i')
+        && is_char_at_idx(l, i++, 'l')
+        && is_char_at_idx(l, i++, 'a')
+        && is_char_at_idx(l, i++, 'r')
+        && is_char_at_idx(l, i++, 'i')
+        && is_char_at_idx(l, i++, 't')
+        && is_char_at_idx(l, i++, 'y')
+        && is_char_at_idx(l, i++, ' ')
+        && is_char_at_idx(l, i++, 'i')
+        && is_char_at_idx(l, i++, 'n')
+        && is_char_at_idx(l, i++, 'd')
+        && is_char_at_idx(l, i++, 'e')
+        && is_char_at_idx(l, i++, 'x');
+}
+
+static bool
+is_rename_from_line(struct line * l)
+{
+    if (l->data == NULL)
+        return false;
+
+    unsigned i = 0;
+    return is_char_at_idx(l, i++, 'r')
+        && is_char_at_idx(l, i++, 'e')
+        && is_char_at_idx(l, i++, 'n')
+        && is_char_at_idx(l, i++, 'a')
+        && is_char_at_idx(l, i++, 'm')
+        && is_char_at_idx(l, i++, 'e')
+        && is_char_at_idx(l, i++, ' ')
+        && is_char_at_idx(l, i++, 'f')
+        && is_char_at_idx(l, i++, 'r')
+        && is_char_at_idx(l, i++, 'o')
+        && is_char_at_idx(l, i++, 'm');
+}
+
+static bool
+is_rename_to_line(struct line * l)
+{
+    if (l->data == NULL)
+        return false;
+
+    unsigned i = 0;
+    return is_char_at_idx(l, i++, 'r')
+        && is_char_at_idx(l, i++, 'e')
+        && is_char_at_idx(l, i++, 'n')
+        && is_char_at_idx(l, i++, 'a')
+        && is_char_at_idx(l, i++, 'm')
+        && is_char_at_idx(l, i++, 'e')
+        && is_char_at_idx(l, i++, ' ')
+        && is_char_at_idx(l, i++, 't')
+        && is_char_at_idx(l, i++, 'o');
+}
+
 /*
  * One more more extended header lines:
  * old mode <mode>
@@ -250,6 +313,18 @@ read_extended_header_lines(struct diff * d)
             d->status = DIFF_STATUS_NEW;
         } else if (read_delete_line(l)) {
             d->status = DIFF_STATUS_DELETED;
+        } else if (is_similarity_index_line(l)) {
+            /* expect rename from, and rename to */
+            l = stdin_read_line();
+            if (!is_rename_from_line(l)) {
+                na_printf("Expected rename from line at row %u\n", l->row);
+                return false;
+            }
+            l = stdin_read_line();
+            if (!is_rename_to_line(l)) {
+                na_printf("Expected rename to line at row %u\n", l->row);
+                return false;
+            }
         } else if (read_index_line(l)) {
             d->expect_line_changes = true;
             /* expect this extended header to be last */
