@@ -11,10 +11,6 @@
 #include "io.h"
 #include "error.h"
 
-/* Have a look at section 'Generating patch text with -p':
- * https://git-scm.com/docs/git-diff-index
- */
-
 static int
 get_char(struct line * l, unsigned idx)
 {
@@ -118,7 +114,6 @@ static bool
 read_copy_from(struct line * l)
 {
     unsigned i = 0;
-    /* TODO also look at the mode */
     return is_char_at_idx(l, i++, 'c')
         && is_char_at_idx(l, i++, 'o')
         && is_char_at_idx(l, i++, 'p')
@@ -134,7 +129,6 @@ static bool
 read_copy_to(struct line * l)
 {
     unsigned i = 0;
-    /* TODO also look at the mode */
     return is_char_at_idx(l, i++, 'c')
         && is_char_at_idx(l, i++, 'o')
         && is_char_at_idx(l, i++, 'p')
@@ -311,16 +305,7 @@ is_dissimiliarity_index_line(struct line * l)
 static bool
 read_extended_header_lines(struct diff * d)
 {
-//    enum extended_header_state {
-//        EXT_HEADER_STATE_OLD_MODE,
-//        EXT_HEADER_STATE_NEW_MODE,
-//        EXT_HEADER_STATE_READ_COPY_FROM,
-//        EXT_HEADER_STATE_READ_COPY_TO,
-//    };
-
-
     d->status = DIFF_STATUS_CHANGED;
-    /* TODO add flags for things that are already set, sanity checking */
     for (;;) {
         struct line * l = stdin_read_line();
         if (read_old_mode(l)) {
@@ -707,7 +692,7 @@ change_pre_post_lines(struct hunk_line_array * cla,
 }
 
 /* Look for PRE_LINES directly followed by matching number of POST_LINES, change all of them to
- * changes instead.
+ * PRE_/POST_CHANGED_LINE instead.
  */
 static bool
 find_changes_in_hunk(struct hunk_line_array * cla)
@@ -777,13 +762,6 @@ find_changes(struct diff_array * da)
 }
 
 
-/* Find pairs of related changes in pre and post image */
-static void
-find_groups(struct diff_array * da)
-{
-    // TODO
-}
-
 bool
 parse_stdin(struct diff_array * da)
 {
@@ -795,8 +773,6 @@ parse_stdin(struct diff_array * da)
     try_ret(parse_start(da));
 
     try_ret(find_changes(da));
-
-    find_groups(da);
 
     return true;
 }
