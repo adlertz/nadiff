@@ -1,11 +1,15 @@
-How to build
+## Screenshot
+
+![Alt text](screenshot.png?raw=true "Screenshot")
+
+## How to build
 
     make
 
     sudo make install
     (installs to /usr/local/bin/)
 
-How to use
+## How to use
 
     git diff | nadiff
 
@@ -16,7 +20,7 @@ How to use
     You get the point.
 
 
-How to navigate
+## How to navigate
 
     n Next diff
     N Previous diff
