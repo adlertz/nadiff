@@ -13,8 +13,6 @@
 
     git diff --staged | nadiff
 
-    git diff HEAD | nadiff
-
     git diff HEAD~1..HEAD | nadiff
 
     You get the point.
