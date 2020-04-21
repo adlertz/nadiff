@@ -79,4 +79,10 @@ vt100_set_yellow_foreground();
 void
 vt100_set_underline();
 
+void
+vt100_leave_alternate_screen_buffer(void);
+
+void
+vt100_enter_alternate_screen_buffer(void);
+
 #endif

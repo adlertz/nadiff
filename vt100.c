@@ -186,3 +186,15 @@ vt100_get_window_size(struct vt100_dims * d)
         return true;
     }
 }
+
+void
+vt100_leave_alternate_screen_buffer(void)
+{
+    write(STDOUT_FILENO, "\x1b[?1049l", 8);
+}
+
+void
+vt100_enter_alternate_screen_buffer(void)
+{
+    write(STDOUT_FILENO, "\x1b[?1049h", 8);
+}

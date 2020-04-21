@@ -595,6 +595,9 @@ catch_signal(int signo)
 bool
 render(int fd, struct diff_array * da)
 {
+    /* this might not work in some terminals */
+    vt100_enter_alternate_screen_buffer();
+
     vt100_enable_raw_mode(fd);
 
     vt100_hide_cursor();
@@ -623,7 +626,11 @@ render(int fd, struct diff_array * da)
     vt100_clear_screen();
     vt100_set_pos(1,1);
 
+    /* this might not work in some terminals */
+    vt100_leave_alternate_screen_buffer();
+
     // TODO cleanup
+
 
     return true;
 }
