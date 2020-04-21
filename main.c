@@ -20,31 +20,21 @@ get_tty_fd()
     return fileno(tty);
 }
 
-static void
-cleanup(struct diff_array * da)
-{
-    // free everything..
-}
-
 int
 main(int argc, char * argv[])
 {
     struct diff_array da = {0};
 
     if (!parse_stdin(&da)) {
-        cleanup(&da);
         return EXIT_FAILURE;
     }
 
     int fd = get_tty_fd();
     if (fd < 0 ) {
-        cleanup(&da);
         return EXIT_FAILURE;
     }
 
     render(fd, &da);
-
-    cleanup(&da);
 
     return EXIT_SUCCESS;
 }

@@ -610,12 +610,10 @@ render(int fd, struct diff_array * da)
         allocate_render_line_pair(&pa);
 
     if(!update_display(da, &pa)) {
-        // TODO cleanup
         return false;
     }
 
     if (!enter_loop(fd, da, &pa)) {
-        // TODO cleanup
         return false;
     }
 
@@ -628,9 +626,6 @@ render(int fd, struct diff_array * da)
 
     /* this might not work in some terminals */
     vt100_leave_alternate_screen_buffer();
-
-    // TODO cleanup
-
 
     return true;
 }
