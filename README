@@ -1,13 +1,11 @@
-= README
-
-== How to build
+How to build
 
     make
 
     sudo make install
     (installs to /usr/local/bin/)
 
-== How to use
+How to use
 
     git diff | nadiff
 
@@ -18,7 +16,7 @@
     You get the point.
 
 
-== Navigate
+How to navigate
 
     n Next diff
     N Previous diff
