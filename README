@@ -28,4 +28,6 @@
     z Scroll down in left diff view
     s Scroll up in right diff view
     x Scroll down in right diff view
+    d Scroll up in both left and right diff view
+    c Scroll down in both left and right diff view
     q Quit

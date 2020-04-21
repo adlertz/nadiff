@@ -551,6 +551,26 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
                     redraw = true;
                 }
                 break;
+            case KEY_TYPE_MOVE_DIFFS_UP:
+                if (diff1_start > 0) {
+                    diff1_start -= 5;
+                    redraw = true;
+                }
+                if (diff0_start > 0) {
+                    diff0_start -= 5;
+                    redraw = true;
+                }
+                break;
+            case KEY_TYPE_MOVE_DIFFS_DOWN:
+                if (diff1_start + diff1_window.br.y - 10 < p->a1.size) {
+                    diff1_start += 5;
+                    redraw = true;
+                }
+                if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
+                    diff0_start += 5;
+                    redraw = true;
+                }
+                break;
         }
 
         if (redraw) {

@@ -16,6 +16,8 @@ enum vt100_key_type {
     KEY_TYPE_MOVE_DIFF0_DOWN,
     KEY_TYPE_MOVE_DIFF1_UP,
     KEY_TYPE_MOVE_DIFF1_DOWN,
+    KEY_TYPE_MOVE_DIFFS_UP,
+    KEY_TYPE_MOVE_DIFFS_DOWN,
 };
 
 struct vt100_dims {
