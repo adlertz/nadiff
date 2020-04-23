@@ -584,7 +584,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
 
 
 static void
-catch_signal(int signo)
+catch_window_change_signal(int signo)
 {
     if (signo == SIGWINCH) {
         /* terminal resized */
@@ -622,7 +622,7 @@ render(int fd, struct diff_array * da)
 {
     init_vt100(fd);
 
-    signal(SIGWINCH, catch_signal);
+    signal(SIGWINCH, catch_window_change_signal);
 
     /* pre allocate array data */
     struct render_line_pair_array pa = {0};
