@@ -21,11 +21,11 @@ nadiff: $(obj)
 
 install: nadiff
 > mkdir -p ${PREFIX}/bin
-> cp -f nadiff ${PREFIX}/bin
+> cp -f nadiff git-nadiff ${PREFIX}/bin
 > chmod 755 ${PREFIX}/bin/nadiff
 
 uninstall:
-> rm -f ${PREFIX}/bin/nadiff
+> rm -f $(addprefix ${PREFIX}/bin/, nadiff git-nadiff)
 
 .PHONY: clean
 clean:
