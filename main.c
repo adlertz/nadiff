@@ -29,11 +29,11 @@ main(int argc, char * argv[])
         return EXIT_FAILURE;
     }
 
-    int ret = EXIT_SUCCESS;
-    if (!render(fd, &da))
-        ret = EXIT_FAILURE;
+    if (!render(fd, &da)) {
+        fclose(tty);
+        return EXIT_FAILURE;
+    }
 
     fclose(tty);
-
-    return ret;
+    return EXIT_SUCCESS;
 }
