@@ -592,8 +592,8 @@ catch_signal(int signo)
     }
 }
 
-bool
-render(int fd, struct diff_array * da)
+static void
+init_vt100(int fd)
 {
     /* this might not work in some terminals */
     vt100_enter_alternate_screen_buffer();
@@ -601,22 +601,11 @@ render(int fd, struct diff_array * da)
     vt100_enable_raw_mode(fd);
 
     vt100_hide_cursor();
+}
 
-    signal(SIGWINCH, catch_signal);
-
-    /* pre allocate array data */
-    struct render_line_pair_array pa = {0};
-    for (unsigned i = 0; i < da->size; ++i)
-        allocate_render_line_pair(&pa);
-
-    if(!update_display(da, &pa)) {
-        return false;
-    }
-
-    if (!enter_loop(fd, da, &pa)) {
-        return false;
-    }
-
+static void
+reset_vt100(int fd)
+{
     vt100_show_cursor();
 
     vt100_disable_raw_mode(fd);
@@ -626,6 +615,30 @@ render(int fd, struct diff_array * da)
 
     /* this might not work in some terminals */
     vt100_leave_alternate_screen_buffer();
+}
 
+bool
+render(int fd, struct diff_array * da)
+{
+    init_vt100(fd);
+
+    signal(SIGWINCH, catch_signal);
+
+    /* pre allocate array data */
+    struct render_line_pair_array pa = {0};
+    for (unsigned i = 0; i < da->size; ++i)
+        allocate_render_line_pair(&pa);
+
+    if(!update_display(da, &pa)) {
+        reset_vt100(fd);
+        return false;
+    }
+
+    if (!enter_loop(fd, da, &pa)) {
+        reset_vt100(fd);
+        return false;
+    }
+
+    reset_vt100(fd);
     return true;
 }
