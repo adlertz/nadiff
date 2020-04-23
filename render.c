@@ -414,7 +414,7 @@ calculate_dimensions(struct vt100_dims * d, struct window * list, struct window 
      * | |     |     |
      * +-+-----+-----+
      *
-     * where A is diff list, and B and C are pre and post diff windows.
+     * where A is diff list, and B and C are diff0 (pre) and diff1 (post) windows.
      */
 
     /* calculate sizes of list and code windows */
@@ -465,7 +465,6 @@ update_display(struct diff_array * da, struct render_line_pair_array * pa)
     vt100_clear_screen();
 
     if (is_terminal_too_small(&dims)) {
-        /* just print some dots ... */
         vt100_set_pos(1, 1);
         static const char * const error_msg = "Increase terminal size..";
         vt100_write(error_msg, strlen(error_msg));
