@@ -4,10 +4,14 @@
 
 ## How to build
 
+    # build
     make
 
+    # build and install to /usr/local/bin/
     sudo make install
-    (installs to /usr/local/bin/)
+
+    # uninstall
+    sudo make uninstall
 
 ## How to use
 
