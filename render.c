@@ -66,7 +66,8 @@ draw_list(struct diff_array * da, struct window * list)
             vt100_write(d->short_pre_img_name, MIN(strlen(d->short_pre_img_name), list_width));
         else {
             char name[200];
-            sprintf(name, "%s -> %s", d->short_pre_img_name, d->short_post_img_name);
+            name[199] = '\n';
+            snprintf(name, 199, "%s -> %s", d->short_pre_img_name, d->short_post_img_name);
             vt100_write(name, MIN(strlen(name), list_width));
         }
     }
@@ -269,6 +270,7 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
 
     unsigned start_idx_diff0;
 
+    unsigned diff0_br_y = diff0->br.y;
 
     unsigned diff0_width = diff0->br.x - diff0->tl.x;
     unsigned diff1_width = diff1->br.x - diff1->tl.x;
@@ -297,15 +299,15 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
     struct render_line_array * a1 = &p->a1;
 
     for (unsigned i = diff0_start; i < a0->size; ++i) {
-
-        if (cur_vt100_diff0_row == diff0->br.y)
+        if (cur_vt100_diff0_row == diff0_br_y)
             break;
 
-        struct render_line * l = &a0->data[i];
-
         char line[diff0_width];
+        line[diff0_width - 1] = '\n';
 
         vt100_set_pos(diff0->tl.x, cur_vt100_diff0_row);
+
+        struct render_line * l = &a0->data[i];
         switch (l->type) {
             case RENDER_LINE_SPACE:
                 break;
@@ -316,28 +318,30 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
                 break;
             case RENDER_LINE_NORMAL:
                 vt100_set_default_colors();
-                sprintf(line, "    %3u %s", l->line_nr, l->data);
+                snprintf(line, diff0_width - 1, "    %3u %s", l->line_nr, l->data);
                 vt100_write(line, MIN(strlen(line), diff0_width));
-                break;
+                    break;
             case RENDER_LINE_POST_LINE:
                 vt100_set_green_foreground();
-                sprintf(line, "%3u     %s", l->change_number, l->data);
+                snprintf(line, diff0_width - 1, "%3u     %s", l->change_number, l->data);
                 vt100_write(line, MIN(strlen(line), diff0_width));
                 break;
             case RENDER_LINE_PRE:
                 vt100_set_red_foreground();
                 if (l->new_change)
-                    sprintf(line, "%3u %3u %s", l->change_number, l->line_nr, l->data);
+                    snprintf(line, diff0_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
                 else
-                    sprintf(line, "    %3u %s", l->line_nr, l->data);
+                    snprintf(line, diff0_width - 1, "    %3u %s", l->line_nr, l->data);
+
                 vt100_write(line, MIN(strlen(line), diff0_width));
                 break;
             case RENDER_LINE_CHANGED:
                 vt100_set_yellow_foreground();
                 if (l->new_change)
-                    sprintf(line, "%3u %3u %s", l->change_number, l->line_nr, l->data);
+                    snprintf(line, diff0_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
                 else
-                    sprintf(line, "    %3u %s", l->line_nr, l->data);
+                    snprintf(line, diff0_width - 1, "    %3u %s", l->line_nr, l->data);
+
                 vt100_write(line, MIN(strlen(line), diff0_width));
                 break;
             default:
@@ -357,6 +361,8 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
         struct render_line * l = &a1->data[i];
 
         char line[diff1_width];
+        line[diff1_width - 1] = '\n';
+
         vt100_set_pos(diff1->tl.x, cur_vt100_diff1_row);
         switch (l->type) {
             case RENDER_LINE_SPACE:
@@ -368,28 +374,28 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
                 break;
             case RENDER_LINE_NORMAL:
                 vt100_set_default_colors();
-                sprintf(line, "    %3u %s", l->line_nr, l->data);
+                snprintf(line, diff1_width - 1, "    %3u %s", l->line_nr, l->data);
                 vt100_write(line, MIN(strlen(line), diff1_width));
                 break;
             case RENDER_LINE_PRE_LINE:
                 vt100_set_red_foreground();
-                sprintf(line, "%3u     %s", l->change_number, l->data);
+                snprintf(line, diff1_width - 1, "%3u     %s", l->change_number, l->data);
                 vt100_write(line, MIN(strlen(line), diff1_width));
                 break;
             case RENDER_LINE_POST:
                 vt100_set_green_foreground();
                 if (l->new_change)
-                    sprintf(line, "%3u %3u %s", l->change_number, l->line_nr, l->data);
+                    snprintf(line, diff1_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
                 else
-                    sprintf(line, "    %3u %s", l->line_nr, l->data);
+                    snprintf(line, diff1_width - 1, "    %3u %s", l->line_nr, l->data);
                 vt100_write(line, MIN(strlen(line), diff1_width));
                 break;
             case RENDER_LINE_CHANGED:
                 vt100_set_yellow_foreground();
                 if (l->new_change)
-                    sprintf(line, "%3u %3u %s", l->change_number, l->line_nr, l->data);
+                    snprintf(line, diff1_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
                 else
-                    sprintf(line, "    %3u %s", l->line_nr, l->data);
+                    snprintf(line, diff1_width - 1, "    %3u %s", l->line_nr, l->data);
                 vt100_write(line, MIN(strlen(line), diff1_width));
                 break;
             default:
