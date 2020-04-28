@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define MAX_LINE_SIZE 512
+#define MAX_LINE_SIZE 4096
 
 static char buf[MAX_LINE_SIZE];
 static struct line l;
@@ -26,6 +26,9 @@ stdin_read_line(void)
 
     if (fgets(buf, sizeof(buf), stdin) == NULL)
         return &l;
+
+    /* in case we can't read complete line */
+    buf[MAX_LINE_SIZE - 1] = '\n';
 
     /* get the length of the buffer, i.e. how much we've read */
     size_t buf_len = strlen(buf);
