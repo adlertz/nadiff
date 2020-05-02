@@ -24,6 +24,10 @@ static unsigned diff_idx = 0;
 static unsigned diff0_start = 0;
 static unsigned diff1_start = 0;
 
+static unsigned list_visible_start = 0;
+static unsigned list_visible_end = 0;
+
+static struct window list;
 static struct window diff0_window;
 static struct window diff1_window;
 
@@ -51,15 +55,19 @@ draw_list(struct diff_array * da, struct window * list)
     vt100_set_pos(list->tl.x, list->tl.y + 1);
     vt100_write(line, list_width);
 
-    for (unsigned i = 0; i < da->size; ++i) {
+    for (unsigned i = list_visible_start; i < da->size; ++i) {
         struct diff * d = &da->data[i];
+
+        /* Our we outside screen ? */
+        if ((i - list_visible_start + 3) > list->br.y)
+            break;
 
         if (diff_idx == i)
             vt100_set_inverted_colors();
         else
             vt100_set_default_colors();
 
-        vt100_set_pos(list->tl.x, list->tl.y + i + 2);
+        vt100_set_pos(list->tl.x, list->tl.y + i - list_visible_start + 2);
 
 
         if (strcmp(d->short_pre_img_name, d->short_post_img_name) == 0)
@@ -477,7 +485,6 @@ update_display(struct diff_array * da, struct render_line_pair_array * pa)
         return true;
     }
 
-    struct window list;
     calculate_dimensions(&dims, &list, &diff0_window, &diff1_window);
 
     draw_list(da, &list);
@@ -515,6 +522,12 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
                     diff0_start = 0;
                     diff1_start = 0;
 
+                    if (diff_idx < list_visible_start) {
+                        list_visible_start = diff_idx;
+
+                        list_visible_end = diff_idx + (list.br.y - 3);
+                    }
+
                     redraw = true;
                 }
                 break;
@@ -524,6 +537,14 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
 
                     diff0_start = 0;
                     diff1_start = 0;
+
+                    if (diff_idx > list.br.y - 3) { // because the list from third row
+
+                        if (diff_idx > list_visible_end)
+                            list_visible_end = diff_idx;
+
+                        list_visible_start = list_visible_end - (list.br.y - 3);
+                    }
 
                     redraw = true;
                 }
