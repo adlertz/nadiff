@@ -367,7 +367,11 @@ read_extended_header_lines(struct diff * d)
 
             /* if binary file then we don't to anything else */
             if (!is_binary_file(l)) {
-                d->expect_line_changes = true;
+
+                /* there are files that have no data in them */
+                if (!is_diff_header(l) && l->data != NULL)
+                    d->expect_line_changes = true;
+
                 stdin_reset_cur_line();
             }
             return true;
