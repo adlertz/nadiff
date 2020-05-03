@@ -276,10 +276,6 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
     unsigned cur_vt100_diff0_row = diff0->tl.y;
     unsigned cur_vt100_diff1_row = diff1->tl.y;
 
-    unsigned start_idx_diff0;
-
-    unsigned diff0_br_y = diff0->br.y;
-
     unsigned diff0_width = diff0->br.x - diff0->tl.x;
     unsigned diff1_width = diff1->br.x - diff1->tl.x;
     /* draw pre and post names */
@@ -307,7 +303,7 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
     struct render_line_array * a1 = &p->a1;
 
     for (unsigned i = diff0_start; i < a0->size; ++i) {
-        if (cur_vt100_diff0_row == diff0_br_y)
+        if (cur_vt100_diff0_row == diff0->br.y)
             break;
 
         char line[diff0_width];
