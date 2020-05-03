@@ -161,10 +161,6 @@ is_pre_image_add(struct line * l)
     return is_char_at_idx(l, 0, '-');
 }
 
-static void
-validate_diff_line(struct line * l)
-{}
-
 static bool
 is_extended_header_new_line(struct line * l)
 {
