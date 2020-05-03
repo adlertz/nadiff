@@ -507,6 +507,8 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
         switch (key) {
             case KEY_TYPE_NONE:
                 break;
+            case KEY_TYPE_UNKNOWN:
+                break;
             case KEY_TYPE_ERROR:
                 return false;
             case KEY_TYPE_EXIT:

@@ -9,7 +9,7 @@
 #include "error.h"
 
 int
-main(int argc, char * argv[])
+main()
 {
     struct diff_array da = {0};
 

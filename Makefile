@@ -7,7 +7,7 @@ src = $(wildcard *.c)
 obj = $(src:.c=.o)
 dep = $(obj:.o=.d)  # one dependency file for each source
 
-CFLAGS = -g3
+CFLAGS = -g3 -Wall -Wextra -Werror -Wno-sign-compare
 
 nadiff: $(obj)
 > $(CC) -o $@ $^
