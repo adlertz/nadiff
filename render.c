@@ -27,7 +27,7 @@ static unsigned diff1_start = 0;
 static unsigned list_visible_start = 0;
 static unsigned list_visible_end = 0;
 
-static struct window list;
+static struct window list_window;
 static struct window diff0_window;
 static struct window diff1_window;
 
@@ -485,9 +485,9 @@ update_display(struct diff_array * da, struct render_line_pair_array * pa)
         return true;
     }
 
-    calculate_dimensions(&dims, &list, &diff0_window, &diff1_window);
+    calculate_dimensions(&dims, &list_window, &diff0_window, &diff1_window);
 
-    draw_list(da, &list);
+    draw_list(da, &list_window);
 
     struct diff * diff = &da->data[diff_idx];
 
@@ -525,7 +525,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
                     if (diff_idx < list_visible_start) {
                         list_visible_start = diff_idx;
 
-                        list_visible_end = diff_idx + (list.br.y - 3);
+                        list_visible_end = diff_idx + (list_window.br.y - 3);
                     }
 
                     redraw = true;
@@ -538,12 +538,12 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
                     diff0_start = 0;
                     diff1_start = 0;
 
-                    if (diff_idx > list.br.y - 3) { // because the list from third row
+                    if (diff_idx > list_window.br.y - 3) { // because the list from third row
 
                         if (diff_idx > list_visible_end)
                             list_visible_end = diff_idx;
 
-                        list_visible_start = list_visible_end - (list.br.y - 3);
+                        list_visible_start = list_visible_end - (list_window.br.y - 3);
                     }
 
                     redraw = true;
