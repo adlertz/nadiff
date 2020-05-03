@@ -1,6 +1,6 @@
 ## Screenshot
 
-![Alt text](screenshot.png?raw=true "Screenshot")
+![Screenshot of nadiff](screenshot.png?raw=true "Screenshot")
 
 ## How to build
 
