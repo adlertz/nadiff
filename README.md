@@ -23,6 +23,10 @@
 
     You get the point.
 
+    You can also use 'git-nadiff' which is installed automatically.
+
+    git-nadiff HEAD~1..HEAD
+
 
 ## How to navigate
 
