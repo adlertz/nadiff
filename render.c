@@ -318,7 +318,7 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
             case RENDER_LINE_SECTION_NAME:
                 vt100_set_underline();
                 vt100_set_pos(diff0->tl.x + 8, cur_vt100_diff0_row);
-                vt100_write(l->data, MIN(l->len, diff0_width));
+                vt100_write(l->data, MIN(l->len, diff0_width - 8));
                 break;
             case RENDER_LINE_NORMAL:
                 vt100_set_default_colors();
@@ -374,7 +374,7 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
             case RENDER_LINE_SECTION_NAME:
                 vt100_set_underline();
                 vt100_set_pos(diff1->tl.x + 8, cur_vt100_diff1_row);
-                vt100_write(l->data, MIN(l->len, diff1_width));
+                vt100_write(l->data, MIN(l->len, diff1_width - 8));
                 break;
             case RENDER_LINE_NORMAL:
                 vt100_set_default_colors();
