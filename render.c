@@ -2,6 +2,7 @@
 #include "error.h"
 #include "vt100.h"
 #include "alloc.h"
+#include "compare.h"
 
 
 #include <ctype.h>
@@ -14,10 +15,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-
-
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b))
 
 static bool redraw = false;
 static unsigned diff_idx = 0;
