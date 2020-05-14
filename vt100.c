@@ -1,4 +1,6 @@
 #include "vt100.h"
+#include "error.h"
+#include "compare.h"
 
 #include <termios.h>
 #include <unistd.h>
@@ -8,9 +10,11 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "error.h"
-
 struct termios org;
+
+#define MAX_STR_SIZE 4096
+
+char str[MAX_STR_SIZE];
 
 void
 vt100_enable_raw_mode(int fd)
@@ -167,9 +171,25 @@ vt100_set_pos(int x, int y)
 }
 
 void
-vt100_write(char const * data, unsigned len)
+vt100_write(char const * data, unsigned len, unsigned max)
 {
-    write(STDOUT_FILENO, data, len);
+    int si = 0;
+    for (unsigned i = 0; i < len; i++) {
+        if (i >= MAX_STR_SIZE)
+            break;
+
+        char c = data[i];
+        if (c == '\t') {
+            str[si++] = ' ';
+            str[si++] = ' ';
+            str[si++] = ' ';
+            str[si++] = ' ';
+         } else {
+            str[si++] = c;
+         }
+    }
+
+    write(STDOUT_FILENO, str, MIN(si, max));
 }
 
 bool
