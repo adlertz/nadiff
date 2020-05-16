@@ -266,6 +266,82 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 }
 
 static bool
+display_line_number(struct render_line * l, char * line, int window_width)
+{
+    switch (l->type) {
+        case RENDER_LINE_SPACE:
+        case RENDER_LINE_SECTION_NAME:
+            return true;
+        case RENDER_LINE_NORMAL:
+            vt100_set_default_colors();
+            snprintf(line, window_width - 1, "    %3u", l->line_nr);
+            break;
+        case RENDER_LINE_POST_LINE:
+        case RENDER_LINE_PRE_LINE:
+            if (l->type == RENDER_LINE_POST_LINE)
+                vt100_set_green_foreground();
+            else
+                vt100_set_red_foreground();
+            snprintf(line, window_width - 1, "%3u    ", l->change_number);
+            break;
+        case RENDER_LINE_PRE:
+        case RENDER_LINE_CHANGED:
+        case RENDER_LINE_POST:
+            if (l->type == RENDER_LINE_PRE)
+                vt100_set_red_foreground();
+            else if (l->type == RENDER_LINE_CHANGED)
+                vt100_set_yellow_foreground();
+            else
+                vt100_set_green_foreground();
+            if (l->new_change)
+                snprintf(line, window_width - 1, "%3u %3u", l->change_number, l->line_nr);
+            else
+                snprintf(line, window_width - 1, "    %3u", l->line_nr);
+            break;
+        default:
+            na_printf("Should not enter here with type: %u\n" , l->type);
+            return false;
+    }
+
+    vt100_write(line, strlen(line), window_width);
+
+    return true;
+}
+
+static bool
+display_line(struct render_line * l, int window_width)
+{
+    switch (l->type) {
+        case RENDER_LINE_SPACE:
+            return true;
+        case RENDER_LINE_SECTION_NAME:
+            vt100_set_underline();
+            break;
+        case RENDER_LINE_NORMAL:
+            vt100_set_default_colors();
+            break;
+        case RENDER_LINE_POST:
+        case RENDER_LINE_POST_LINE:
+            vt100_set_green_foreground();
+            break;
+        case RENDER_LINE_PRE:
+        case RENDER_LINE_PRE_LINE:
+            vt100_set_red_foreground();
+            break;
+        case RENDER_LINE_CHANGED:
+            vt100_set_yellow_foreground();
+            break;
+        default:
+            na_printf("Should not enter here with type: %u\n" , l->type);
+            return false;
+    }
+
+    vt100_write(l->data, l->len, window_width);
+
+    return true;
+}
+
+static bool
 draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
     struct render_line_pair * p)
 {
@@ -293,7 +369,6 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
     vt100_set_pos(diff1->tl.x, cur_vt100_diff1_row++);
     vt100_write(diff_line, diff0_width, diff0_width);
 
-
     /* let's display hunks */
     struct render_line_array * a0 = &p->a0;
     struct render_line_array * a1 = &p->a1;
@@ -302,53 +377,21 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
         if (cur_vt100_diff0_row == diff0->br.y)
             break;
 
+        struct render_line * l = &a0->data[i];
+
         char line[diff0_width];
         line[diff0_width - 1] = '\n';
 
         vt100_set_pos(diff0->tl.x, cur_vt100_diff0_row);
 
-        struct render_line * l = &a0->data[i];
-        switch (l->type) {
-            case RENDER_LINE_SPACE:
-                break;
-            case RENDER_LINE_SECTION_NAME:
-                vt100_set_underline();
-                vt100_set_pos(diff0->tl.x + 8, cur_vt100_diff0_row);
-                vt100_write(l->data, l->len, diff0_width - 8);
-                break;
-            case RENDER_LINE_NORMAL:
-                vt100_set_default_colors();
-                snprintf(line, diff0_width - 1, "    %3u %s", l->line_nr, l->data);
-                vt100_write(line, strlen(line), diff0_width);
-                    break;
-            case RENDER_LINE_POST_LINE:
-                vt100_set_green_foreground();
-                snprintf(line, diff0_width - 1, "%3u     %s", l->change_number, l->data);
-                vt100_write(line, strlen(line), diff0_width);
-                break;
-            case RENDER_LINE_PRE:
-                vt100_set_red_foreground();
-                if (l->new_change)
-                    snprintf(line, diff0_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
-                else
-                    snprintf(line, diff0_width - 1, "    %3u %s", l->line_nr, l->data);
+        try_ret(display_line_number(l, line, diff0_width));
 
-                vt100_write(line, strlen(line), diff0_width);
-                break;
-            case RENDER_LINE_CHANGED:
-                vt100_set_yellow_foreground();
-                if (l->new_change)
-                    snprintf(line, diff0_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
-                else
-                    snprintf(line, diff0_width - 1, "    %3u %s", l->line_nr, l->data);
+        vt100_set_pos(diff0->tl.x + 8, cur_vt100_diff0_row);
 
-                vt100_write(line, strlen(line), diff0_width);
-                break;
-            default:
-                na_printf("Should not enter here with type: %u\n" , l->type);
-                return false;
-        }
+        try_ret(display_line(l, diff0_width - 8));
+
         cur_vt100_diff0_row++;
+
     }
 
     vt100_set_default_colors();
@@ -364,44 +407,13 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
         line[diff1_width - 1] = '\n';
 
         vt100_set_pos(diff1->tl.x, cur_vt100_diff1_row);
-        switch (l->type) {
-            case RENDER_LINE_SPACE:
-                break;
-            case RENDER_LINE_SECTION_NAME:
-                vt100_set_underline();
-                vt100_set_pos(diff1->tl.x + 8, cur_vt100_diff1_row);
-                vt100_write(l->data, l->len, diff1_width - 8);
-                break;
-            case RENDER_LINE_NORMAL:
-                vt100_set_default_colors();
-                snprintf(line, diff1_width - 1, "    %3u %s", l->line_nr, l->data);
-                vt100_write(line, strlen(line), diff1_width);
-                break;
-            case RENDER_LINE_PRE_LINE:
-                vt100_set_red_foreground();
-                snprintf(line, diff1_width - 1, "%3u     %s", l->change_number, l->data);
-                vt100_write(line, strlen(line), diff1_width);
-                break;
-            case RENDER_LINE_POST:
-                vt100_set_green_foreground();
-                if (l->new_change)
-                    snprintf(line, diff1_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
-                else
-                    snprintf(line, diff1_width - 1, "    %3u %s", l->line_nr, l->data);
-                vt100_write(line, strlen(line), diff1_width);
-                break;
-            case RENDER_LINE_CHANGED:
-                vt100_set_yellow_foreground();
-                if (l->new_change)
-                    snprintf(line, diff1_width - 1, "%3u %3u %s", l->change_number, l->line_nr, l->data);
-                else
-                    snprintf(line, diff1_width - 1, "    %3u %s", l->line_nr, l->data);
-                vt100_write(line, strlen(line), diff1_width);
-                break;
-            default:
-                na_printf("Should not enter here with type: %u\n" , l->type);
-                return false;
-        }
+
+        try_ret(display_line_number(l, line, diff1_width));
+
+        vt100_set_pos(diff1->tl.x + 8, cur_vt100_diff1_row);
+
+        try_ret(display_line(l, diff1_width - 8));
+
         cur_vt100_diff1_row++;
     }
 
