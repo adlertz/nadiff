@@ -571,7 +571,7 @@ read_hunk_line(struct line * l, struct hunk * h)
 
     char * code = extract_and_allocate_code_line(l);
 
-    struct hunk_line * hl = allocate_hunk_line(&h->hla);
+    struct hunk_line * hl = alloc_hunk_line(&h->hla);
     *hl = (struct hunk_line) {
         .line = code,
         .len = strlen(code),
@@ -614,7 +614,7 @@ parse_start(struct diff_array * da)
                     return false;
                 }
 
-                d = allocate_diff(da);
+                d = alloc_diff(da);
                 if (!set_diff_header(d, l)) {
                     na_printf("Could not set diff header at row %u\n", l->row);
                     return false;
@@ -655,7 +655,7 @@ parse_start(struct diff_array * da)
                     return false;
                 }
 
-                h = allocate_hunk(&d->ha);
+                h = alloc_hunk(&d->ha);
 
                 if (!set_hunk_header(h, l)) {
                     na_printf("Failed to set hunk header at row %u\n", l->row);

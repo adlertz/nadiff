@@ -20,7 +20,7 @@ cap_grow(void ** data, unsigned sz_elem, unsigned size, unsigned * cap) {
 }
 
 struct diff *
-allocate_diff(struct diff_array * a)
+alloc_diff(struct diff_array * a)
 {
     if (!cap_grow((void**)&a->data, sizeof(struct diff), a->size + 1, &a->cap))
         return NULL;
@@ -30,7 +30,7 @@ allocate_diff(struct diff_array * a)
 }
 
 struct hunk *
-allocate_hunk(struct hunk_array * a)
+alloc_hunk(struct hunk_array * a)
 {
     if (!cap_grow((void**)&a->data, sizeof(struct hunk), a->size + 1, &a->cap))
         return NULL;
@@ -40,7 +40,7 @@ allocate_hunk(struct hunk_array * a)
 }
 
 struct hunk_line *
-allocate_hunk_line(struct hunk_line_array * a)
+alloc_hunk_line(struct hunk_line_array * a)
 {
     if (!cap_grow((void**)&a->data, sizeof(struct hunk_line), a->size + 1, &a->cap))
         return NULL;
@@ -50,7 +50,7 @@ allocate_hunk_line(struct hunk_line_array * a)
 }
 
 struct render_line *
-allocate_render_line(struct render_line_array * a)
+alloc_render_line(struct render_line_array * a)
 {
     if (!cap_grow((void**)&a->data, sizeof(struct render_line), a->size + 1, &a->cap))
         return NULL;
@@ -60,7 +60,7 @@ allocate_render_line(struct render_line_array * a)
 }
 
 struct render_line_pair *
-allocate_render_line_pair(struct render_line_pair_array * a)
+alloc_render_line_pair(struct render_line_pair_array * a)
 {
     if (!cap_grow((void**)&a->data, sizeof(struct render_line_pair), a->size + 1, &a->cap))
         return NULL;

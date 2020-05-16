@@ -106,24 +106,24 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
             unsigned len = strlen(h->section_name);
 
             if (i != 0) {
-                struct render_line * l = allocate_render_line(a0);
+                struct render_line * l = alloc_render_line(a0);
                 l->type = RENDER_LINE_SPACE;
-                l = allocate_render_line(a0);
+                l = alloc_render_line(a0);
                 l->type = RENDER_LINE_SPACE;
-                l = allocate_render_line(a1);
+                l = alloc_render_line(a1);
                 l->type = RENDER_LINE_SPACE;
-                l = allocate_render_line(a1);
+                l = alloc_render_line(a1);
                 l->type = RENDER_LINE_SPACE;
             }
 
-            struct render_line * l0 = allocate_render_line(a0);
+            struct render_line * l0 = alloc_render_line(a0);
             *l0 = (struct render_line) {
                 .type = RENDER_LINE_SECTION_NAME,
                 .data = h->section_name,
                 .len = len
             };
 
-            struct render_line * l1 = allocate_render_line(a1);
+            struct render_line * l1 = alloc_render_line(a1);
             *l1 = (struct render_line) {
                 .type = RENDER_LINE_SECTION_NAME,
                 .data = h->section_name,
@@ -140,7 +140,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
 
             if (hl->type == PRE_LINE) {
-                struct render_line * l0 = allocate_render_line(a0);
+                struct render_line * l0 = alloc_render_line(a0);
 
                 *l0 = (struct render_line) {
                     .type = RENDER_LINE_PRE,
@@ -155,7 +155,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     change_nr++;
 
                     /* first time we encounter pre_add, add a line on post */
-                    struct render_line * l1 = allocate_render_line(a1);
+                    struct render_line * l1 = alloc_render_line(a1);
 
                     *l1 = (struct render_line) {
                         .type = RENDER_LINE_PRE_LINE,
@@ -171,7 +171,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                 l0->change_number = change_nr;
 
             } else if (hl->type == POST_LINE) {
-                struct render_line * l1 = allocate_render_line(a1);
+                struct render_line * l1 = alloc_render_line(a1);
 
                 *l1 = (struct render_line) {
                     .type = RENDER_LINE_POST,
@@ -186,7 +186,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     change_nr++;
 
                     /* first time we encounter post_add, add a line on re */
-                    struct render_line * l0 = allocate_render_line(a0);
+                    struct render_line * l0 = alloc_render_line(a0);
 
                     *l0 = (struct render_line) {
                         .type = RENDER_LINE_POST_LINE,
@@ -202,7 +202,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                 l1->change_number = change_nr;
 
             } else if (hl->type == PRE_CHANGED_LINE) {
-                struct render_line * l = allocate_render_line(a0);
+                struct render_line * l = alloc_render_line(a0);
 
                 *l = (struct render_line) {
                     .type = RENDER_LINE_CHANGED,
@@ -222,7 +222,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                 }
 
             } else if (hl->type == POST_CHANGED_LINE) {
-                struct render_line * l = allocate_render_line(a1);
+                struct render_line * l = alloc_render_line(a1);
 
                 *l = (struct render_line) {
                     .type = RENDER_LINE_CHANGED,
@@ -240,7 +240,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
             } else {
                 state = POPULATE_STATE_NORMAL;
 
-                struct render_line * l0 = allocate_render_line(a0);
+                struct render_line * l0 = alloc_render_line(a0);
 
                 *l0 = (struct render_line) {
                     .type = RENDER_LINE_NORMAL,
@@ -249,7 +249,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     .line_nr = pre_line_nr++,
                 };
 
-                struct render_line * l1 = allocate_render_line(a1);
+                struct render_line * l1 = alloc_render_line(a1);
 
                 *l1 = (struct render_line) {
                     .type = RENDER_LINE_NORMAL,
@@ -648,7 +648,7 @@ render(int fd, struct diff_array * da)
     /* pre allocate array data */
     struct render_line_pair_array pa = {0};
     for (unsigned i = 0; i < da->size; ++i)
-        allocate_render_line_pair(&pa);
+        alloc_render_line_pair(&pa);
 
     if(!update_display(da, &pa)) {
         reset_vt100(fd);
