@@ -52,7 +52,7 @@ struct hunk {
 
     char * section_name;
 
-    struct hunk_line_array cla;
+    struct hunk_line_array hla;
 };
 
 /*
@@ -65,7 +65,7 @@ enum diff_status {
 };
 
 struct diff {
-    struct hunk_array ca;
+    struct hunk_array ha;
     char const * pre_img_name;
     char const * post_img_name;
 

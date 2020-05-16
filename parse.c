@@ -408,7 +408,7 @@ read_post_img_line(struct line *l)
  * If number-of-lines not shown it means that it is 0.
  */
 static bool
-set_hunk_header(struct hunk * c, struct line * l)
+set_hunk_header(struct hunk * h, struct line * l)
 {
     /* @@ -1,8 +1 @@ */
     unsigned i = 0;
@@ -442,12 +442,12 @@ set_hunk_header(struct hunk * c, struct line * l)
     try_ret(is_char_at_idx(l, i++, '@'));
     try_ret(is_char_at_idx(l, i++, '@'));
 
-    *c = (struct hunk) {
+    *h = (struct hunk) {
         .pre_line_nr = a_line_nr,
         .pre_num_lines = a_num_lines,
         .post_line_nr = b_line_nr,
         .post_num_lines = b_num_lines,
-        .cla = {0},
+        .hla = {0},
         .section_name = NULL,
     };
 
@@ -458,7 +458,7 @@ set_hunk_header(struct hunk * c, struct line * l)
         char * section = malloc(sizeof(char) * size);
         memcpy(section, l->data + i, size - 1);
         section[size - 1] = '\0';
-        c->section_name = section;
+        h->section_name = section;
     }
 
     return true;
@@ -531,7 +531,7 @@ set_diff_header(struct diff * d, struct line * hdr)
     }
 
     *d = (struct diff) {
-        .ca = {0},
+        .ha = {0},
         .pre_img_name = pre_img_name,
         .short_pre_img_name = short_pre_img_name,
         .short_post_img_name = short_post_img_name,
@@ -565,14 +565,14 @@ static enum hunk_line_type get_hunk_line_type(struct line * l)
 }
 
 static bool
-read_hunk_line(struct line * l, struct hunk * c)
+read_hunk_line(struct line * l, struct hunk * h)
 {
     enum hunk_line_type lt = get_hunk_line_type(l);
 
     char * code = extract_and_allocate_code_line(l);
 
-    struct hunk_line * cl = allocate_hunk_line(&c->cla);
-    *cl = (struct hunk_line) {
+    struct hunk_line * hl = allocate_hunk_line(&h->hla);
+    *hl = (struct hunk_line) {
         .line = code,
         .len = strlen(code),
         .type = lt,
@@ -603,7 +603,7 @@ parse_start(struct diff_array * da)
     enum parse_state state = PARSE_STATE_EXPECT_DIFF;
 
     struct diff * d = NULL;
-    struct hunk * c = NULL;
+    struct hunk * h = NULL;
     for (;;) {
         struct line * l = stdin_read_line();
 
@@ -655,15 +655,15 @@ parse_start(struct diff_array * da)
                     return false;
                 }
 
-                c = allocate_hunk(&d->ca);
+                h = allocate_hunk(&d->ha);
 
-                if (!set_hunk_header(c, l)) {
+                if (!set_hunk_header(h, l)) {
                     na_printf("Failed to set hunk header at row %u\n", l->row);
                     return false;
                 }
 
                 l = stdin_read_line();
-                try_ret(read_hunk_line(l, c));
+                try_ret(read_hunk_line(l, h));
 
                 state = PARSE_STATE_ACCEPT_ALL;
 
@@ -682,7 +682,7 @@ parse_start(struct diff_array * da)
                     stdin_reset_cur_line();
                 }
                 else
-                    try_ret(read_hunk_line(l, c));
+                    try_ret(read_hunk_line(l, h));
 
                 break;
             }
@@ -693,28 +693,28 @@ parse_start(struct diff_array * da)
 }
 
 static bool
-change_pre_post_lines(struct hunk_line_array * cla,
+change_pre_post_lines(struct hunk_line_array * hla,
         unsigned pre_start_idx,
         unsigned post_start_idx,
         unsigned size)
 {
 
     for (unsigned i = pre_start_idx; i < pre_start_idx + size; ++i) {
-        struct hunk_line * cl = &cla->data[i];
-        if (cl->type != PRE_LINE) {
+        struct hunk_line * hl = &hla->data[i];
+        if (hl->type != PRE_LINE) {
             na_printf("Expected PRE_LINE\n");
             return false;
         }
-        cl->type = PRE_CHANGED_LINE;
+        hl->type = PRE_CHANGED_LINE;
     }
 
     for (unsigned i = post_start_idx; i < post_start_idx + size; ++i) {
-        struct hunk_line * cl = &cla->data[i];
-        if (cl->type != POST_LINE) {
+        struct hunk_line * hl = &hla->data[i];
+        if (hl->type != POST_LINE) {
             na_printf("Expected POST_LINE\n");
             return false;
         }
-        cl->type = POST_CHANGED_LINE;
+        hl->type = POST_CHANGED_LINE;
     }
 
     return true;
@@ -724,7 +724,7 @@ change_pre_post_lines(struct hunk_line_array * cla,
  * PRE_/POST_CHANGED_LINE instead.
  */
 static bool
-find_changes_in_hunk(struct hunk_line_array * cla)
+find_changes_in_hunk(struct hunk_line_array * hla)
 {
     enum ongoing_state {
         STATE_ONGOING_START,
@@ -740,10 +740,10 @@ find_changes_in_hunk(struct hunk_line_array * cla)
     unsigned num_pres = 0;
     unsigned num_posts = 0;
 
-    for (unsigned i = 0; i < cla->size; ++i) {
-        struct hunk_line * cl = &cla->data[i];
+    for (unsigned i = 0; i < hla->size; ++i) {
+        struct hunk_line * hl = &hla->data[i];
 
-        if (cl->type == PRE_LINE) {
+        if (hl->type == PRE_LINE) {
             if (state == STATE_ONGOING_POST) {
                 na_printf("Error when parsing changes. This should not happen\n");
                 return false;
@@ -753,7 +753,7 @@ find_changes_in_hunk(struct hunk_line_array * cla)
                 start_pre_idx = i;
                 state = STATE_ONGOING_PRE;
             }
-        } else if (cl->type == POST_LINE) {
+        } else if (hl->type == POST_LINE) {
             if (state == STATE_ONGOING_PRE) {
                 num_pres = i - start_pre_idx;
                 start_post_idx = i;
@@ -763,7 +763,7 @@ find_changes_in_hunk(struct hunk_line_array * cla)
             if (state == STATE_ONGOING_POST) {
                 num_posts = i - start_post_idx;
                 if (num_pres == num_posts)
-                    try_ret(change_pre_post_lines(cla, start_pre_idx, start_post_idx, num_pres));
+                    try_ret(change_pre_post_lines(hla, start_pre_idx, start_post_idx, num_pres));
             }
 
             if (state != STATE_ONGOING_START)
@@ -780,10 +780,10 @@ find_changes(struct diff_array * da)
     for (unsigned i = 0; i < da->size; ++i) {
         struct diff * d = &da->data[i];
 
-        for (unsigned j = 0; j < d->ca.size; ++j) {
-            struct hunk * c = &d->ca.data[j];
+        for (unsigned j = 0; j < d->ha.size; ++j) {
+            struct hunk * h = &d->ha.data[j];
 
-            try_ret(find_changes_in_hunk(&c->cla));
+            try_ret(find_changes_in_hunk(&h->hla));
         }
     }
 

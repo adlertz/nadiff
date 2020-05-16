@@ -98,12 +98,12 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
     struct render_line_array * a0 = &p->a0;
     struct render_line_array * a1 = &p->a1;
 
-    struct hunk_array const * ca = &d->ca;
-    for (unsigned i = 0; i < ca->size; ++i) {
-        struct hunk const * c = &ca->data[i];
+    struct hunk_array const * ha = &d->ha;
+    for (unsigned i = 0; i < ha->size; ++i) {
+        struct hunk const * h = &ha->data[i];
 
-        if (c->section_name != NULL) {
-            unsigned len = strlen(c->section_name);
+        if (h->section_name != NULL) {
+            unsigned len = strlen(h->section_name);
 
             if (i != 0) {
                 struct render_line * l = allocate_render_line(a0);
@@ -119,33 +119,33 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
             struct render_line * l0 = allocate_render_line(a0);
             *l0 = (struct render_line) {
                 .type = RENDER_LINE_SECTION_NAME,
-                .data = c->section_name,
+                .data = h->section_name,
                 .len = len
             };
 
             struct render_line * l1 = allocate_render_line(a1);
             *l1 = (struct render_line) {
                 .type = RENDER_LINE_SECTION_NAME,
-                .data = c->section_name,
+                .data = h->section_name,
                 .len = len,
             };
         }
 
-        struct hunk_line_array const * cla = &c->cla;
-        unsigned pre_line_nr = c->pre_line_nr;
-        unsigned post_line_nr = c->post_line_nr;
+        struct hunk_line_array const * hla = &h->hla;
+        unsigned pre_line_nr = h->pre_line_nr;
+        unsigned post_line_nr = h->post_line_nr;
 
-        for (unsigned j = 0; j < cla->size; ++j) {
-            struct hunk_line * cl = &cla->data[j];
+        for (unsigned j = 0; j < hla->size; ++j) {
+            struct hunk_line * hl = &hla->data[j];
 
 
-            if (cl->type == PRE_LINE) {
+            if (hl->type == PRE_LINE) {
                 struct render_line * l0 = allocate_render_line(a0);
 
                 *l0 = (struct render_line) {
                     .type = RENDER_LINE_PRE,
-                    .data = cl->line,
-                    .len = cl->len,
+                    .data = hl->line,
+                    .len = hl->len,
                     .line_nr = pre_line_nr++,
                 };
 
@@ -170,13 +170,13 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
                 l0->change_number = change_nr;
 
-            } else if (cl->type == POST_LINE) {
+            } else if (hl->type == POST_LINE) {
                 struct render_line * l1 = allocate_render_line(a1);
 
                 *l1 = (struct render_line) {
                     .type = RENDER_LINE_POST,
-                    .data = cl->line,
-                    .len = cl->len,
+                    .data = hl->line,
+                    .len = hl->len,
                     .line_nr = post_line_nr++,
                 };
 
@@ -201,13 +201,13 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
                 l1->change_number = change_nr;
 
-            } else if (cl->type == PRE_CHANGED_LINE) {
+            } else if (hl->type == PRE_CHANGED_LINE) {
                 struct render_line * l = allocate_render_line(a0);
 
                 *l = (struct render_line) {
                     .type = RENDER_LINE_CHANGED,
-                    .data = cl->line,
-                    .len = cl->len,
+                    .data = hl->line,
+                    .len = hl->len,
                     .line_nr = pre_line_nr++,
                 };
 
@@ -221,13 +221,13 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
                 }
 
-            } else if (cl->type == POST_CHANGED_LINE) {
+            } else if (hl->type == POST_CHANGED_LINE) {
                 struct render_line * l = allocate_render_line(a1);
 
                 *l = (struct render_line) {
                     .type = RENDER_LINE_CHANGED,
-                    .data = cl->line,
-                    .len = cl->len,
+                    .data = hl->line,
+                    .len = hl->len,
                     .line_nr = post_line_nr++,
                     .change_number = change_nr,
                 };
@@ -244,8 +244,8 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
                 *l0 = (struct render_line) {
                     .type = RENDER_LINE_NORMAL,
-                    .data = cl->line,
-                    .len = cl->len,
+                    .data = hl->line,
+                    .len = hl->len,
                     .line_nr = pre_line_nr++,
                 };
 
@@ -253,8 +253,8 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
                 *l1 = (struct render_line) {
                     .type = RENDER_LINE_NORMAL,
-                    .data = cl->line,
-                    .len = cl->len,
+                    .data = hl->line,
+                    .len = hl->len,
                     .line_nr = post_line_nr++,
                 };
             }
