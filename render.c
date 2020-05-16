@@ -138,125 +138,124 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
         for (unsigned j = 0; j < hla->size; ++j) {
             struct hunk_line * hl = &hla->data[j];
 
-
-            if (hl->type == PRE_LINE) {
-                struct render_line * l0 = alloc_render_line(a0);
-
-                *l0 = (struct render_line) {
-                    .type = RENDER_LINE_PRE,
-                    .data = hl->line,
-                    .len = hl->len,
-                    .line_nr = pre_line_nr++,
-                };
-
-                if (state != POPULATE_STATE_PRE_ADD) {
-                    state = POPULATE_STATE_PRE_ADD;
-
-                    change_nr++;
-
-                    /* first time we encounter pre_add, add a line on post */
-                    struct render_line * l1 = alloc_render_line(a1);
-
-                    *l1 = (struct render_line) {
-                        .type = RENDER_LINE_PRE_LINE,
-                        .data = pre_line,
-                        .len = len_pre_post_line,
-                        .new_change = true,
-                        .change_number = change_nr,
-                    };
-
-                    l0->new_change = true;
-                }
-
-                l0->change_number = change_nr;
-
-            } else if (hl->type == POST_LINE) {
-                struct render_line * l1 = alloc_render_line(a1);
-
-                *l1 = (struct render_line) {
-                    .type = RENDER_LINE_POST,
-                    .data = hl->line,
-                    .len = hl->len,
-                    .line_nr = post_line_nr++,
-                };
-
-                if (state != POPULATE_STATE_POST_ADD) {
-                    state = POPULATE_STATE_POST_ADD;
-
-                    change_nr++;
-
-                    /* first time we encounter post_add, add a line on re */
+            switch (hl->type) {
+                case PRE_LINE: {
                     struct render_line * l0 = alloc_render_line(a0);
-
                     *l0 = (struct render_line) {
-                        .type = RENDER_LINE_POST_LINE,
-                        .data = post_line,
-                        .len = len_pre_post_line,
-                        .new_change = true,
-                        .change_number = change_nr,
+                        .type = RENDER_LINE_PRE,
+                        .data = hl->line,
+                        .len = hl->len,
+                        .line_nr = pre_line_nr++,
                     };
 
-                    l1->new_change = true;
+                    if (state != POPULATE_STATE_PRE_ADD) {
+                        state = POPULATE_STATE_PRE_ADD;
+
+                        change_nr++;
+
+                        /* first time we encounter pre_add, add a line on post */
+                        struct render_line * l1 = alloc_render_line(a1);
+                        *l1 = (struct render_line) {
+                            .type = RENDER_LINE_PRE_LINE,
+                            .data = pre_line,
+                            .len = len_pre_post_line,
+                            .new_change = true,
+                            .change_number = change_nr,
+                        };
+
+                        l0->new_change = true;
+                    }
+
+                    l0->change_number = change_nr;
+
+                    break;
                 }
+                case POST_LINE: {
+                    struct render_line * l1 = alloc_render_line(a1);
+                    *l1 = (struct render_line) {
+                        .type = RENDER_LINE_POST,
+                        .data = hl->line,
+                        .len = hl->len,
+                        .line_nr = post_line_nr++,
+                    };
 
-                l1->change_number = change_nr;
+                    if (state != POPULATE_STATE_POST_ADD) {
+                        state = POPULATE_STATE_POST_ADD;
 
-            } else if (hl->type == PRE_CHANGED_LINE) {
-                struct render_line * l = alloc_render_line(a0);
+                        change_nr++;
 
-                *l = (struct render_line) {
-                    .type = RENDER_LINE_CHANGED,
-                    .data = hl->line,
-                    .len = hl->len,
-                    .line_nr = pre_line_nr++,
-                };
+                        /* first time we encounter post_add, add a line on re */
+                        struct render_line * l0 = alloc_render_line(a0);
+                        *l0 = (struct render_line) {
+                            .type = RENDER_LINE_POST_LINE,
+                            .data = post_line,
+                            .len = len_pre_post_line,
+                            .new_change = true,
+                            .change_number = change_nr,
+                        };
 
-                if (state != POPULATE_STATE_PRE_CHANGE)  {
-                    state = POPULATE_STATE_PRE_CHANGE;
+                        l1->new_change = true;
+                    }
 
-                    change_nr++;
+                    l1->change_number = change_nr;
 
-                    l->new_change = true;
-                    l->change_number = change_nr;
-
+                    break;
                 }
+                case PRE_CHANGED_LINE: {
+                    struct render_line * l = alloc_render_line(a0);
+                    *l = (struct render_line) {
+                        .type = RENDER_LINE_CHANGED,
+                        .data = hl->line,
+                        .len = hl->len,
+                        .line_nr = pre_line_nr++,
+                    };
 
-            } else if (hl->type == POST_CHANGED_LINE) {
-                struct render_line * l = alloc_render_line(a1);
+                    if (state != POPULATE_STATE_PRE_CHANGE)  {
+                        state = POPULATE_STATE_PRE_CHANGE;
 
-                *l = (struct render_line) {
-                    .type = RENDER_LINE_CHANGED,
-                    .data = hl->line,
-                    .len = hl->len,
-                    .line_nr = post_line_nr++,
-                    .change_number = change_nr,
-                };
+                        change_nr++;
 
-                if (state == POPULATE_STATE_PRE_CHANGE) {
-                    state = POPULATE_STATE_POST_CHANGE;
-
-                    l->new_change = true;
+                        l->new_change = true;
+                        l->change_number = change_nr;
+                    }
+                    break;
                 }
-            } else {
-                state = POPULATE_STATE_NORMAL;
+                case POST_CHANGED_LINE: {
+                    struct render_line * l = alloc_render_line(a1);
+                    *l = (struct render_line) {
+                        .type = RENDER_LINE_CHANGED,
+                        .data = hl->line,
+                        .len = hl->len,
+                        .line_nr = post_line_nr++,
+                    };
 
-                struct render_line * l0 = alloc_render_line(a0);
+                    if (state == POPULATE_STATE_PRE_CHANGE) {
+                        state = POPULATE_STATE_POST_CHANGE;
 
-                *l0 = (struct render_line) {
-                    .type = RENDER_LINE_NORMAL,
-                    .data = hl->line,
-                    .len = hl->len,
-                    .line_nr = pre_line_nr++,
-                };
+                        l->new_change = true;
+                        l->change_number = change_nr;
+                    }
+                    break;
+                }
+                default: {
+                    state = POPULATE_STATE_NORMAL;
 
-                struct render_line * l1 = alloc_render_line(a1);
+                    struct render_line * l0 = alloc_render_line(a0);
+                    *l0 = (struct render_line) {
+                        .type = RENDER_LINE_NORMAL,
+                        .data = hl->line,
+                        .len = hl->len,
+                        .line_nr = pre_line_nr++,
+                    };
 
-                *l1 = (struct render_line) {
-                    .type = RENDER_LINE_NORMAL,
-                    .data = hl->line,
-                    .len = hl->len,
-                    .line_nr = post_line_nr++,
-                };
+                    struct render_line * l1 = alloc_render_line(a1);
+                    *l1 = (struct render_line) {
+                        .type = RENDER_LINE_NORMAL,
+                        .data = hl->line,
+                        .len = hl->len,
+                        .line_nr = post_line_nr++,
+                    };
+                }
             }
         }
     }
