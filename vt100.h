@@ -37,10 +37,10 @@ void
 vt100_disable_raw_mode(int fd);
 
 void
-vt100_clear_screen();
+vt100_clear_screen(void);
 
 void
-vt100_goto_top_left();
+vt100_goto_top_left(void);
 
 bool
 vt100_set_pos(int x, int y);
@@ -52,34 +52,34 @@ bool
 vt100_get_window_size(struct vt100_dims * d);
 
 void
-vt100_hide_cursor();
+vt100_hide_cursor(void);
 
 void
-vt100_show_cursor();
+vt100_show_cursor(void);
 
 void
-vt100_set_inverted_colors();
+vt100_set_inverted_colors(void);
 
 void
-vt100_set_default_colors();
+vt100_set_default_colors(void);
 
 void
-vt100_set_green_foreground();
+vt100_set_green_foreground(void);
 
 void
-vt100_set_green_background();
+vt100_set_green_background(void);
 
 void
-vt100_set_red_foreground();
+vt100_set_red_foreground(void);
 
 void
-vt100_set_red_background();
+vt100_set_red_background(void);
 
 void
-vt100_set_yellow_foreground();
+vt100_set_yellow_foreground(void);
 
 void
-vt100_set_underline();
+vt100_set_underline(void);
 
 void
 vt100_leave_alternate_screen_buffer(void);

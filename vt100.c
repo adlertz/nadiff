@@ -82,31 +82,31 @@ vt100_disable_raw_mode(int fd)
 }
 
 void
-vt100_clear_screen()
+vt100_clear_screen(void)
 {
     write(STDOUT_FILENO, "\x1b[2J", 4);
 }
 
 void
-vt100_hide_cursor()
+vt100_hide_cursor(void)
 {
     write(STDOUT_FILENO, "\x1b[?25l", 6);
 }
 
 void
-vt100_show_cursor()
+vt100_show_cursor(void)
 {
     write(STDOUT_FILENO, "\x1b[?25h", 6);
 }
 
 void
-vt100_goto_top_left()
+vt100_goto_top_left(void)
 {
     write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
 void
-vt100_set_inverted_colors()
+vt100_set_inverted_colors(void)
 {
     /* 30-37 foreground, 40-47 background */
     /* 30-37 foreground, 40-47 background
@@ -120,44 +120,44 @@ vt100_set_inverted_colors()
 }
 
 void
-vt100_set_default_colors()
+vt100_set_default_colors(void)
 {
     /* turn off character attributes (such as reverse mode) */
     write(STDOUT_FILENO, "\x1b[m", 3);
 }
 
 void
-vt100_set_green_foreground()
+vt100_set_green_foreground(void)
 {
     write(STDOUT_FILENO, "\x1b[32m", 5);
 }
 
 void
-vt100_set_red_foreground()
+vt100_set_red_foreground(void)
 {
     write(STDOUT_FILENO, "\x1b[31m", 5);
 }
 
 void
-vt100_set_green_background()
+vt100_set_green_background(void)
 {
     write(STDOUT_FILENO, "\x1b[m\x1b[42m", 8);
 }
 
 void
-vt100_set_red_background()
+vt100_set_red_background(void)
 {
     write(STDOUT_FILENO, "\x1b[m\x1b[41m", 8);
 }
 
 void
-vt100_set_yellow_foreground()
+vt100_set_yellow_foreground(void)
 {
     write(STDOUT_FILENO, "\x1b[33m", 5);
 }
 
 void
-vt100_set_underline()
+vt100_set_underline(void)
 {
     write(STDOUT_FILENO, "\x1b[4m", 4);
 }
