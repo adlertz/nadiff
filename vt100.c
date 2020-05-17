@@ -171,10 +171,13 @@ vt100_set_pos(int x, int y)
 }
 
 void
-vt100_write(char const * data, unsigned len, unsigned max)
+vt100_write(char const * data, unsigned len, unsigned max, unsigned horizontal_offset)
 {
+    if (horizontal_offset >= len)
+        return;
+
     int si = 0;
-    for (unsigned i = 0; i < len; i++) {
+    for (unsigned i = horizontal_offset; i < len; i++) {
         if (i >= MAX_STR_SIZE)
             break;
 
