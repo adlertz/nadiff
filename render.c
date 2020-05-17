@@ -41,6 +41,22 @@ struct window {
     struct coord tl, br;
 };
 
+/* Custom strlen function that takes tabs into consideration */
+static size_t
+strlen_tabs(char const * data, unsigned len)
+{
+    size_t space_len = 0;
+    for (unsigned i = 0; i < len; ++i) {
+        char c = data[i];
+        if (c == '\t')
+            space_len += 4;
+        else
+            space_len++;
+    }
+
+    return space_len;
+}
+
 static void
 draw_list(struct diff_array * da, struct window * list)
 {
@@ -139,9 +155,12 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
         for (unsigned j = 0; j < hla->size; ++j) {
             struct hunk_line * hl = &hla->data[j];
 
+            struct render_line * l0 = NULL;
+            struct render_line * l1 = NULL;
+
             switch (hl->type) {
                 case PRE_LINE: {
-                    struct render_line * l0 = alloc_render_line(a0);
+                    l0 = alloc_render_line(a0);
                     *l0 = (struct render_line) {
                         .type = RENDER_LINE_PRE,
                         .data = hl->line,
@@ -155,7 +174,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                         change_nr++;
 
                         /* first time we encounter pre_add, add a line on post */
-                        struct render_line * l1 = alloc_render_line(a1);
+                        l1 = alloc_render_line(a1);
                         *l1 = (struct render_line) {
                             .type = RENDER_LINE_PRE_LINE,
                             .data = pre_line,
@@ -172,7 +191,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     break;
                 }
                 case POST_LINE: {
-                    struct render_line * l1 = alloc_render_line(a1);
+                    l1 = alloc_render_line(a1);
                     *l1 = (struct render_line) {
                         .type = RENDER_LINE_POST,
                         .data = hl->line,
@@ -186,7 +205,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                         change_nr++;
 
                         /* first time we encounter post_add, add a line on re */
-                        struct render_line * l0 = alloc_render_line(a0);
+                        l0 = alloc_render_line(a0);
                         *l0 = (struct render_line) {
                             .type = RENDER_LINE_POST_LINE,
                             .data = post_line,
@@ -203,8 +222,8 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     break;
                 }
                 case PRE_CHANGED_LINE: {
-                    struct render_line * l = alloc_render_line(a0);
-                    *l = (struct render_line) {
+                    l0 = alloc_render_line(a0);
+                    *l0 = (struct render_line) {
                         .type = RENDER_LINE_CHANGED,
                         .data = hl->line,
                         .len = hl->len,
@@ -216,14 +235,14 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
                         change_nr++;
 
-                        l->new_change = true;
-                        l->change_number = change_nr;
+                        l0->new_change = true;
+                        l0->change_number = change_nr;
                     }
                     break;
                 }
                 case POST_CHANGED_LINE: {
-                    struct render_line * l = alloc_render_line(a1);
-                    *l = (struct render_line) {
+                    l1 = alloc_render_line(a1);
+                    *l1 = (struct render_line) {
                         .type = RENDER_LINE_CHANGED,
                         .data = hl->line,
                         .len = hl->len,
@@ -233,15 +252,15 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     if (state == POPULATE_STATE_PRE_CHANGE) {
                         state = POPULATE_STATE_POST_CHANGE;
 
-                        l->new_change = true;
-                        l->change_number = change_nr;
+                        l1->new_change = true;
+                        l1->change_number = change_nr;
                     }
                     break;
                 }
                 default: {
                     state = POPULATE_STATE_NORMAL;
 
-                    struct render_line * l0 = alloc_render_line(a0);
+                    l0 = alloc_render_line(a0);
                     *l0 = (struct render_line) {
                         .type = RENDER_LINE_NORMAL,
                         .data = hl->line,
@@ -249,7 +268,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                         .line_nr = pre_line_nr++,
                     };
 
-                    struct render_line * l1 = alloc_render_line(a1);
+                    l1 = alloc_render_line(a1);
                     *l1 = (struct render_line) {
                         .type = RENDER_LINE_NORMAL,
                         .data = hl->line,
@@ -258,6 +277,19 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     };
                 }
             }
+
+            if (l0) {
+                l0->space_len = strlen_tabs(l0->data, l0->len);
+                if (p->space_len_a0 < l0->space_len)
+                    p->space_len_a0 = l0->space_len;
+            }
+
+            if (l1) {
+                l1->space_len = strlen_tabs(l1->data, l1->len);
+                if (p->space_len_a1 < l1->space_len)
+                    p->space_len_a1 = l1->space_len;
+            }
+
         }
     }
 
@@ -612,12 +644,15 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
                     redraw = true;
                 }
                 break;
-            case KEY_TYPE_MOVE_DIFFS_RIGHT:
-                if (horizontal_offset < 255) {
+            case KEY_TYPE_MOVE_DIFFS_RIGHT: {
+                unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - 8;
+                unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - 8;
+                if (horizontal_offset + diff0_offs< p->space_len_a0 || horizontal_offset + diff1_offs < p->space_len_a1) {
                     horizontal_offset++;
                     redraw = true;
                 }
                 break;
+            }
         }
 
         if (redraw) {
@@ -628,7 +663,6 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
 
     return true;
 }
-
 
 static void
 catch_window_change_signal(int signo)

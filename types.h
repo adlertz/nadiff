@@ -95,6 +95,8 @@ struct render_line {
     enum render_line_type type;
     char * data; /* probably just pointing to data inside a hunk_line */
     unsigned len;
+    /* length where tabs are counted as spaces */
+    unsigned space_len;
     unsigned line_nr;
 
     /* change */
@@ -112,6 +114,10 @@ struct render_line_pair {
     bool is_populated;
     struct render_line_array a0;
     struct render_line_array a1;
+
+    /* length where tabs are counted as spaces */
+    unsigned space_len_a0;
+    unsigned space_len_a1;
 };
 
 struct render_line_pair_array {
