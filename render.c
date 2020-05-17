@@ -33,6 +33,8 @@ static char * pre_line  = "----------------------------------------";
 static char * post_line = "++++++++++++++++++++++++++++++++++++++++";
 static unsigned len_pre_post_line = 40;
 
+#define LINE_NBR_WIDTH 8
+
 struct coord {
     int x, y;
 };
@@ -419,9 +421,9 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
 
         try_ret(display_line_number(l, line, diff0_width));
 
-        vt100_set_pos(diff0->tl.x + 8, cur_vt100_diff0_row);
+        vt100_set_pos(diff0->tl.x + LINE_NBR_WIDTH, cur_vt100_diff0_row);
 
-        try_ret(display_line(l, diff0_width - 8));
+        try_ret(display_line(l, diff0_width - LINE_NBR_WIDTH));
 
         cur_vt100_diff0_row++;
 
@@ -443,9 +445,9 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
 
         try_ret(display_line_number(l, line, diff1_width));
 
-        vt100_set_pos(diff1->tl.x + 8, cur_vt100_diff1_row);
+        vt100_set_pos(diff1->tl.x + LINE_NBR_WIDTH, cur_vt100_diff1_row);
 
-        try_ret(display_line(l, diff1_width - 8));
+        try_ret(display_line(l, diff1_width - LINE_NBR_WIDTH));
 
         cur_vt100_diff1_row++;
     }
@@ -645,8 +647,8 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
                 }
                 break;
             case KEY_TYPE_MOVE_DIFFS_RIGHT: {
-                unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - 8;
-                unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - 8;
+                unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - LINE_NBR_WIDTH;
+                unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - LINE_NBR_WIDTH;
                 if (horizontal_offset + diff0_offs< p->space_len_a0 || horizontal_offset + diff1_offs < p->space_len_a1) {
                     horizontal_offset++;
                     redraw = true;
