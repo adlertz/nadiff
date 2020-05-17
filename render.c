@@ -20,6 +20,7 @@ static bool redraw = false;
 static unsigned diff_idx = 0;
 static unsigned diff0_start = 0;
 static unsigned diff1_start = 0;
+static unsigned horizontal_offset = 0;
 
 static unsigned list_visible_start = 0;
 static unsigned list_visible_end = 0;
@@ -336,7 +337,7 @@ display_line(struct render_line * l, int window_width)
             return false;
     }
 
-    vt100_write(l->data, l->len, window_width, 0);
+    vt100_write(l->data, l->len, window_width, horizontal_offset);
 
     return true;
 }
@@ -527,6 +528,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
 
                     diff0_start = 0;
                     diff1_start = 0;
+                    horizontal_offset = 0;
 
                     if (diff_idx < list_visible_start) {
                         list_visible_start = diff_idx;
@@ -543,6 +545,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
 
                     diff0_start = 0;
                     diff1_start = 0;
+                    horizontal_offset = 0;
 
                     if (diff_idx > list_window.br.y - 3) { // because the list from third row
 
@@ -600,6 +603,18 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
                 }
                 if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
                     diff0_start += 5;
+                    redraw = true;
+                }
+                break;
+            case KEY_TYPE_MOVE_DIFFS_LEFT:
+                if (horizontal_offset > 0) {
+                    horizontal_offset--;
+                    redraw = true;
+                }
+                break;
+            case KEY_TYPE_MOVE_DIFFS_RIGHT:
+                if (horizontal_offset < 255) {
+                    horizontal_offset++;
                     redraw = true;
                 }
                 break;

@@ -66,6 +66,10 @@ vt100_read_key(int fd)
             return KEY_TYPE_MOVE_DIFFS_UP;
         case 'c':
             return KEY_TYPE_MOVE_DIFFS_DOWN;
+        case 'w':
+            return KEY_TYPE_MOVE_DIFFS_LEFT;
+        case 'e':
+            return KEY_TYPE_MOVE_DIFFS_RIGHT;
         default:
             return KEY_TYPE_UNKNOWN;
     }
