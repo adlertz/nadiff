@@ -33,7 +33,7 @@ static char * pre_line  = "----------------------------------------";
 static char * post_line = "++++++++++++++++++++++++++++++++++++++++";
 static unsigned len_pre_post_line = 40;
 
-#define LINE_NBR_WIDTH 8
+#define LINE_NBR_WIDTH 9
 
 struct coord {
     int x, y;
@@ -308,7 +308,7 @@ display_line_number(struct render_line * l, char * line, int window_width)
             return true;
         case RENDER_LINE_NORMAL:
             vt100_set_default_colors();
-            snprintf(line, window_width, "    %3u", l->line_nr);
+            snprintf(line, window_width, "    %4u", l->line_nr);
             break;
         case RENDER_LINE_POST_LINE:
         case RENDER_LINE_PRE_LINE:
@@ -328,9 +328,9 @@ display_line_number(struct render_line * l, char * line, int window_width)
             else
                 vt100_set_green_foreground();
             if (l->new_change)
-                snprintf(line, window_width, "%3u %3u", l->change_number, l->line_nr);
+                snprintf(line, window_width, "%3u %4u", l->change_number, l->line_nr);
             else
-                snprintf(line, window_width, "    %3u", l->line_nr);
+                snprintf(line, window_width, "    %4u", l->line_nr);
             break;
         default:
             na_printf("Should not enter here with type: %u\n" , l->type);
