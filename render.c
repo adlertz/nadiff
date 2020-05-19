@@ -302,13 +302,17 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 static bool
 display_line_number(struct render_line * l, char * line, int window_width)
 {
+    const char * LINE_NUMBER = "    %4u";
+    const char * CHANGE_NUMBER = "%3u";
+    const char * CHANGE_AND_LINE_NUMBERS = "%3u %4u";
+
     switch (l->type) {
         case RENDER_LINE_SPACE:
         case RENDER_LINE_SECTION_NAME:
             return true;
         case RENDER_LINE_NORMAL:
             vt100_set_default_colors();
-            snprintf(line, window_width, "    %4u", l->line_nr);
+            snprintf(line, window_width, LINE_NUMBER, l->line_nr);
             break;
         case RENDER_LINE_POST_LINE:
         case RENDER_LINE_PRE_LINE:
@@ -316,7 +320,7 @@ display_line_number(struct render_line * l, char * line, int window_width)
                 vt100_set_green_foreground();
             else
                 vt100_set_red_foreground();
-            snprintf(line, window_width, "%3u    ", l->change_number);
+            snprintf(line, window_width, CHANGE_NUMBER, l->change_number);
             break;
         case RENDER_LINE_PRE:
         case RENDER_LINE_CHANGED:
@@ -328,9 +332,9 @@ display_line_number(struct render_line * l, char * line, int window_width)
             else
                 vt100_set_green_foreground();
             if (l->new_change)
-                snprintf(line, window_width, "%3u %4u", l->change_number, l->line_nr);
+                snprintf(line, window_width, CHANGE_AND_LINE_NUMBERS, l->change_number, l->line_nr);
             else
-                snprintf(line, window_width, "    %4u", l->line_nr);
+                snprintf(line, window_width, LINE_NUMBER, l->line_nr);
             break;
         default:
             na_printf("Should not enter here with type: %u\n" , l->type);
