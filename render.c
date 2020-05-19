@@ -90,8 +90,7 @@ draw_list(struct diff_array * da, struct window * list)
             vt100_write(d->short_pre_img_name, strlen(d->short_pre_img_name), list_width, 0);
         else {
             char name[200];
-            name[199] = '\n';
-            snprintf(name, 199, "%s -> %s", d->short_pre_img_name, d->short_post_img_name);
+            snprintf(name, 200, "%s -> %s", d->short_pre_img_name, d->short_post_img_name);
             vt100_write(name, strlen(name), list_width, 0);
         }
     }
@@ -309,7 +308,7 @@ display_line_number(struct render_line * l, char * line, int window_width)
             return true;
         case RENDER_LINE_NORMAL:
             vt100_set_default_colors();
-            snprintf(line, window_width - 1, "    %3u", l->line_nr);
+            snprintf(line, window_width, "    %3u", l->line_nr);
             break;
         case RENDER_LINE_POST_LINE:
         case RENDER_LINE_PRE_LINE:
@@ -317,7 +316,7 @@ display_line_number(struct render_line * l, char * line, int window_width)
                 vt100_set_green_foreground();
             else
                 vt100_set_red_foreground();
-            snprintf(line, window_width - 1, "%3u    ", l->change_number);
+            snprintf(line, window_width, "%3u    ", l->change_number);
             break;
         case RENDER_LINE_PRE:
         case RENDER_LINE_CHANGED:
@@ -329,9 +328,9 @@ display_line_number(struct render_line * l, char * line, int window_width)
             else
                 vt100_set_green_foreground();
             if (l->new_change)
-                snprintf(line, window_width - 1, "%3u %3u", l->change_number, l->line_nr);
+                snprintf(line, window_width, "%3u %3u", l->change_number, l->line_nr);
             else
-                snprintf(line, window_width - 1, "    %3u", l->line_nr);
+                snprintf(line, window_width, "    %3u", l->line_nr);
             break;
         default:
             na_printf("Should not enter here with type: %u\n" , l->type);
@@ -415,7 +414,6 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
         struct render_line * l = &a0->data[i];
 
         char line[diff0_width];
-        line[diff0_width - 1] = '\n';
 
         vt100_set_pos(diff0->tl.x, cur_vt100_diff0_row);
 
