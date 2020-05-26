@@ -12,10 +12,6 @@
 
 struct termios org;
 
-#define MAX_STR_SIZE 4096
-
-char str[MAX_STR_SIZE];
-
 void
 vt100_enable_raw_mode(int fd)
 {
@@ -180,23 +176,7 @@ vt100_write(char const * data, unsigned len, unsigned max, unsigned horizontal_o
     if (horizontal_offset >= len)
         return;
 
-    int si = 0;
-    for (unsigned i = horizontal_offset; i < len; i++) {
-        if (i >= MAX_STR_SIZE)
-            break;
-
-        char c = data[i];
-        if (c == '\t') {
-            str[si++] = ' ';
-            str[si++] = ' ';
-            str[si++] = ' ';
-            str[si++] = ' ';
-         } else {
-            str[si++] = c;
-         }
-    }
-
-    write(STDOUT_FILENO, str, MIN(si, max));
+    write(STDOUT_FILENO, data + horizontal_offset, MIN(len - horizontal_offset, max));
 }
 
 bool

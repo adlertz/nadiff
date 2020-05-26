@@ -99,6 +99,31 @@ draw_list(struct diff_array * da, struct window * list)
 }
 
 static bool
+convert_tabs(char ** data, unsigned * len)
+{
+    size_t space_len = strlen_tabs(*data, *len);
+    char * new_data = malloc(sizeof(char) * space_len);
+
+    unsigned si = 0;
+    for (unsigned i = 0; i < *len; ++i) {
+        if ((*data)[i] == '\t') {
+            new_data[si++] = '~';
+            new_data[si++] = ' ';
+            new_data[si++] = ' ';
+            new_data[si++] = ' ';
+        } else {
+            new_data[si++] = (*data)[i];
+        }
+    }
+    free(*data);
+
+    *data = new_data;
+    *len = space_len;
+
+    return true;
+}
+
+static bool
 populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 {
     enum populate_state {
@@ -118,10 +143,12 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
     struct hunk_array const * ha = &d->ha;
     for (unsigned i = 0; i < ha->size; ++i) {
-        struct hunk const * h = &ha->data[i];
+        struct hunk * h = &ha->data[i];
 
         if (h->section_name != NULL) {
             unsigned len = strlen(h->section_name);
+
+            convert_tabs(&h->section_name, &len);
 
             if (i != 0) {
                 struct render_line * l = alloc_render_line(a0);
@@ -138,7 +165,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
             *l0 = (struct render_line) {
                 .type = RENDER_LINE_SECTION_NAME,
                 .data = h->section_name,
-                .len = len
+                .len = len,
             };
 
             struct render_line * l1 = alloc_render_line(a1);
@@ -155,6 +182,8 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
         for (unsigned j = 0; j < hla->size; ++j) {
             struct hunk_line * hl = &hla->data[j];
+
+            convert_tabs(&hl->line, &hl->len);
 
             struct render_line * l0 = NULL;
             struct render_line * l1 = NULL;
@@ -279,18 +308,11 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                 }
             }
 
-            if (l0) {
-                l0->space_len = strlen_tabs(l0->data, l0->len);
-                if (p->space_len_a0 < l0->space_len)
-                    p->space_len_a0 = l0->space_len;
-            }
+            if (l0 && l0->len > p->len_a0)
+                p->len_a0 = l0->len;
 
-            if (l1) {
-                l1->space_len = strlen_tabs(l1->data, l1->len);
-                if (p->space_len_a1 < l1->space_len)
-                    p->space_len_a1 = l1->space_len;
-            }
-
+            if (l1 && l1->len > p->len_a1)
+                p->len_a1 = l1->len;
         }
     }
 
@@ -651,7 +673,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
             case KEY_TYPE_MOVE_DIFFS_RIGHT: {
                 unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - LINE_NBR_WIDTH;
                 unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - LINE_NBR_WIDTH;
-                if (horizontal_offset + diff0_offs< p->space_len_a0 || horizontal_offset + diff1_offs < p->space_len_a1) {
+                if (horizontal_offset + diff0_offs< p->len_a0 || horizontal_offset + diff1_offs < p->len_a1) {
                     horizontal_offset++;
                     redraw = true;
                 }
