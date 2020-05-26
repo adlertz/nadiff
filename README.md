@@ -1,3 +1,9 @@
+## About
+
+A side-by-side git diff viewer for a VT100 compatible linux terminal.
+
+NOTE: Tabs are displayed as `~   `
+
 ## Screenshot
 
 ![Screenshot of nadiff](screenshot.png?raw=true "Screenshot")
@@ -30,14 +36,22 @@
 
 ## How to navigate
 
-    n Next diff
-    N Previous diff
-    a Scroll up in left diff view
-    z Scroll down in left diff view
-    s Scroll up in right diff view
-    x Scroll down in right diff view
-    d Scroll up in both left and right diff view
-    c Scroll down in both left and right diff view
-    w Scroll left in both left and right diff view
-    e Scroll right in both left and right diff view
-    q Quit
+### Selecting diff
+    n  Next diff
+    N  Previous diff
+
+
+### Scrolling
+    a  Up in left diff view
+    z  Down in left diff view
+
+    s  Up in right diff view
+    x  Down in right diff view
+
+    d  Up in both diff views
+    c  Down in both diff views
+    w  Left in both diff views
+    e  Right in both diff views
+
+### Quit
+    q  Quit
