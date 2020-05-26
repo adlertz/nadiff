@@ -46,7 +46,7 @@ bool
 vt100_set_pos(int x, int y);
 
 void
-vt100_write(char const * data, unsigned len, unsigned max, unsigned horizontal_offset);
+vt100_write(char const * data, unsigned len, unsigned max);
 
 bool
 vt100_get_window_size(struct vt100_dims * d);

@@ -69,7 +69,7 @@ draw_list(struct diff_array * da, struct window * list)
         line[i] = '-';
 
     vt100_set_pos(list->tl.x, list->tl.y + 1);
-    vt100_write(line, list_width, list_width, 0);
+    vt100_write(line, list_width, list_width);
 
     for (unsigned i = list_visible_start; i < da->size; ++i) {
         struct diff * d = &da->data[i];
@@ -87,11 +87,11 @@ draw_list(struct diff_array * da, struct window * list)
 
 
         if (strcmp(d->short_pre_img_name, d->short_post_img_name) == 0)
-            vt100_write(d->short_pre_img_name, strlen(d->short_pre_img_name), list_width, 0);
+            vt100_write(d->short_pre_img_name, strlen(d->short_pre_img_name), list_width);
         else {
             char name[200];
             snprintf(name, 200, "%s -> %s", d->short_pre_img_name, d->short_post_img_name);
-            vt100_write(name, strlen(name), list_width, 0);
+            vt100_write(name, strlen(name), list_width);
         }
     }
 
@@ -363,7 +363,7 @@ display_line_number(struct render_line * l, char * line, int window_width)
             return false;
     }
 
-    vt100_write(line, strlen(line), window_width, 0);
+    vt100_write(line, strlen(line), window_width);
 
     return true;
 }
@@ -396,7 +396,8 @@ display_line(struct render_line * l, int window_width)
             return false;
     }
 
-    vt100_write(l->data, l->len, window_width, horizontal_offset);
+    if (horizontal_offset < l->len)
+        vt100_write(l->data + horizontal_offset, l->len - horizontal_offset, window_width);
 
     return true;
 }
@@ -413,7 +414,7 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
     /* draw pre and post names */
 
     vt100_set_pos(diff0->tl.x, cur_vt100_diff0_row++);
-    vt100_write(d->pre_img_name, strlen(d->pre_img_name), diff0_width, 0);
+    vt100_write(d->pre_img_name, strlen(d->pre_img_name), diff0_width);
 
     /* for now let's assume diff0 and diff1 have same width */
     char diff_line[diff0_width];
@@ -421,13 +422,13 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
         diff_line[i] = '-';
 
     vt100_set_pos(diff0->tl.x, cur_vt100_diff0_row++);
-    vt100_write(diff_line, diff0_width, diff0_width, 0);
+    vt100_write(diff_line, diff0_width, diff0_width);
 
     vt100_set_pos(diff1->tl.x, cur_vt100_diff1_row++);
-    vt100_write(d->post_img_name, strlen(d->post_img_name), diff1_width, 0);
+    vt100_write(d->post_img_name, strlen(d->post_img_name), diff1_width);
 
     vt100_set_pos(diff1->tl.x, cur_vt100_diff1_row++);
-    vt100_write(diff_line, diff0_width, diff0_width, 0);
+    vt100_write(diff_line, diff0_width, diff0_width);
 
     /* let's display hunks */
     struct render_line_array * a0 = &p->a0;
@@ -544,7 +545,7 @@ update_display(struct diff_array * da, struct render_line_pair_array * pa)
     if (is_terminal_too_small(&dims)) {
         vt100_set_pos(1, 1);
         static const char * const error_msg = "Increase terminal size..";
-        vt100_write(error_msg, strlen(error_msg), dims.cols, 0);
+        vt100_write(error_msg, strlen(error_msg), dims.cols);
         return true;
     }
 

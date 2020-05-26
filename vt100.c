@@ -171,12 +171,9 @@ vt100_set_pos(int x, int y)
 }
 
 void
-vt100_write(char const * data, unsigned len, unsigned max, unsigned horizontal_offset)
+vt100_write(char const * data, unsigned len, unsigned max)
 {
-    if (horizontal_offset >= len)
-        return;
-
-    write(STDOUT_FILENO, data + horizontal_offset, MIN(len - horizontal_offset, max));
+    write(STDOUT_FILENO, data, MIN(len, max));
 }
 
 bool
