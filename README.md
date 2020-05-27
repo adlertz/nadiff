@@ -41,17 +41,17 @@ NOTE: Tabs are displayed as `~   `
     N  Previous diff
 
 
-### Scrolling
-    a  Up in left diff view
-    z  Down in left diff view
+### Scrolling in diff views
+    a  Up in left view
+    z  Down in left view
 
-    s  Up in right diff view
-    x  Down in right diff view
+    s  Up in right view
+    x  Down in right view
 
-    d  Up in both diff views
-    c  Down in both diff views
-    w  Left in both diff views
-    e  Right in both diff views
+    d  Up in both views
+    c  Down in both views
+    w  Left in both views
+    e  Right in both views
 
-### Quit
+### Other
     q  Quit
