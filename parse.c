@@ -698,23 +698,21 @@ change_pre_post_lines(struct hunk_line_array * hla,
         unsigned post_start_idx,
         unsigned size)
 {
+    for (unsigned i = 0; i < size; ++i) {
+        struct hunk_line * pre_hl = &hla->data[i + pre_start_idx];
+        struct hunk_line * post_hl = &hla->data[i + post_start_idx];
 
-    for (unsigned i = pre_start_idx; i < pre_start_idx + size; ++i) {
-        struct hunk_line * hl = &hla->data[i];
-        if (hl->type != PRE_LINE) {
+        if (pre_hl->type != PRE_LINE) {
             na_printf("Expected PRE_LINE\n");
             return false;
         }
-        hl->type = PRE_CHANGED_LINE;
-    }
 
-    for (unsigned i = post_start_idx; i < post_start_idx + size; ++i) {
-        struct hunk_line * hl = &hla->data[i];
-        if (hl->type != POST_LINE) {
+        if (post_hl->type != POST_LINE) {
             na_printf("Expected POST_LINE\n");
             return false;
         }
-        hl->type = POST_CHANGED_LINE;
+        pre_hl->type = PRE_CHANGED_LINE;
+        post_hl->type = POST_CHANGED_LINE;
     }
 
     return true;
