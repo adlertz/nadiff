@@ -251,42 +251,6 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
                     break;
                 }
-                case PRE_CHANGED_LINE: {
-                    l0 = alloc_render_line(a0);
-                    *l0 = (struct render_line) {
-                        .type = RENDER_LINE_CHANGED,
-                        .data = hl->line,
-                        .len = hl->len,
-                        .line_nr = pre_line_nr++,
-                    };
-
-                    if (state != POPULATE_STATE_PRE_CHANGE)  {
-                        state = POPULATE_STATE_PRE_CHANGE;
-
-                        change_nr++;
-
-                        l0->new_change = true;
-                        l0->change_number = change_nr;
-                    }
-                    break;
-                }
-                case POST_CHANGED_LINE: {
-                    l1 = alloc_render_line(a1);
-                    *l1 = (struct render_line) {
-                        .type = RENDER_LINE_CHANGED,
-                        .data = hl->line,
-                        .len = hl->len,
-                        .line_nr = post_line_nr++,
-                    };
-
-                    if (state == POPULATE_STATE_PRE_CHANGE) {
-                        state = POPULATE_STATE_POST_CHANGE;
-
-                        l1->new_change = true;
-                        l1->change_number = change_nr;
-                    }
-                    break;
-                }
                 default: {
                     state = POPULATE_STATE_NORMAL;
 
@@ -345,12 +309,9 @@ display_line_number(struct render_line * l, char * line, int window_width)
             snprintf(line, window_width, CHANGE_NUMBER, l->change_number);
             break;
         case RENDER_LINE_PRE:
-        case RENDER_LINE_CHANGED:
         case RENDER_LINE_POST:
             if (l->type == RENDER_LINE_PRE)
                 vt100_set_red_foreground();
-            else if (l->type == RENDER_LINE_CHANGED)
-                vt100_set_yellow_foreground();
             else
                 vt100_set_green_foreground();
             if (l->new_change)
@@ -387,9 +348,6 @@ display_line(struct render_line * l, int window_width)
         case RENDER_LINE_PRE:
         case RENDER_LINE_PRE_LINE:
             vt100_set_red_foreground();
-            break;
-        case RENDER_LINE_CHANGED:
-            vt100_set_yellow_foreground();
             break;
         default:
             na_printf("Should not enter here with type: %u\n" , l->type);

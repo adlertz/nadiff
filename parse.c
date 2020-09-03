@@ -690,103 +690,6 @@ parse_start(struct diff_array * da)
     return true;
 }
 
-static bool
-change_pre_post_lines(struct hunk_line_array * hla,
-        unsigned pre_start_idx,
-        unsigned post_start_idx,
-        unsigned size)
-{
-    for (unsigned i = 0; i < size; ++i) {
-        struct hunk_line * pre_hl = &hla->data[i + pre_start_idx];
-        struct hunk_line * post_hl = &hla->data[i + post_start_idx];
-
-        if (pre_hl->type != PRE_LINE) {
-            na_printf("Expected PRE_LINE\n");
-            return false;
-        }
-
-        if (post_hl->type != POST_LINE) {
-            na_printf("Expected POST_LINE\n");
-            return false;
-        }
-        pre_hl->type = PRE_CHANGED_LINE;
-        post_hl->type = POST_CHANGED_LINE;
-    }
-
-    return true;
-}
-
-/* Look for PRE_LINES directly followed by matching number of POST_LINES, change all of them to
- * PRE_/POST_CHANGED_LINE instead.
- */
-static bool
-find_changes_in_hunk(struct hunk_line_array * hla)
-{
-    enum ongoing_state {
-        STATE_ONGOING_START,
-        STATE_ONGOING_PRE,
-        STATE_ONGOING_POST
-    };
-
-    enum ongoing_state state = STATE_ONGOING_START;
-
-    unsigned start_pre_idx = 0;
-    unsigned start_post_idx = 0;
-
-    unsigned num_pres = 0;
-    unsigned num_posts = 0;
-
-    for (unsigned i = 0; i < hla->size; ++i) {
-        struct hunk_line * hl = &hla->data[i];
-
-        if (hl->type == PRE_LINE) {
-            if (state == STATE_ONGOING_POST) {
-                na_printf("Error when parsing changes. This should not happen\n");
-                return false;
-            }
-
-            if (state == STATE_ONGOING_START) {
-                start_pre_idx = i;
-                state = STATE_ONGOING_PRE;
-            }
-        } else if (hl->type == POST_LINE) {
-            if (state == STATE_ONGOING_PRE) {
-                num_pres = i - start_pre_idx;
-                start_post_idx = i;
-                state = STATE_ONGOING_POST;
-            }
-        } else {
-            if (state == STATE_ONGOING_POST) {
-                num_posts = i - start_post_idx;
-                if (num_pres == num_posts)
-                    try_ret(change_pre_post_lines(hla, start_pre_idx, start_post_idx, num_pres));
-            }
-
-            if (state != STATE_ONGOING_START)
-                state = STATE_ONGOING_START;
-        }
-    }
-
-    return true;
-}
-
-static bool
-find_changes(struct diff_array * da)
-{
-    for (unsigned i = 0; i < da->size; ++i) {
-        struct diff * d = &da->data[i];
-
-        for (unsigned j = 0; j < d->ha.size; ++j) {
-            struct hunk * h = &d->ha.data[j];
-
-            try_ret(find_changes_in_hunk(&h->hla));
-        }
-    }
-
-    return true;
-}
-
-
 bool
 parse_stdin(struct diff_array * da)
 {
@@ -796,8 +699,6 @@ parse_stdin(struct diff_array * da)
     }
 
     try_ret(parse_start(da));
-
-    try_ret(find_changes(da));
 
     return true;
 }

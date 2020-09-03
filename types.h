@@ -34,8 +34,6 @@ enum hunk_line_type {
     PRE_LINE,
     POST_LINE,
     NEUTRAL_LINE,
-    PRE_CHANGED_LINE,
-    POST_CHANGED_LINE
 };
 
 struct hunk_line {
@@ -84,7 +82,6 @@ enum render_line_type {
     RENDER_LINE_PRE,
     RENDER_LINE_POST,
     RENDER_LINE_NORMAL,
-    RENDER_LINE_CHANGED,
     RENDER_LINE_SECTION_NAME,
     RENDER_LINE_PRE_LINE,
     RENDER_LINE_POST_LINE,
