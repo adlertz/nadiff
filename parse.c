@@ -608,84 +608,82 @@ parse_start(struct diff_array * da)
         struct line * l = stdin_read_line();
 
         switch (state) {
-            case PARSE_STATE_EXPECT_DIFF: {
-                if (!is_diff_header(l)) {
-                    na_printf("Expected diff header at row %u\n", l->row);
-                    return false;
-                }
-
-                d = alloc_diff(da);
-                if (!set_diff_header(d, l)) {
-                    na_printf("Could not set diff header at row %u\n", l->row);
-                    return false;
-                }
-
-                try_ret(read_extended_header_lines(d));
-
-                if (!d->expect_line_changes) {
-                    l = stdin_read_line();
-
-                    if (l->data == NULL)
-                        return true;
-
-                    stdin_reset_cur_line();
-
-                    /* Goto next diff */
-                    continue;
-                }
-
-                l = stdin_read_line();
-                if (!read_pre_img_line(l)) {
-                   na_printf("Could not parse pre image line at row %u \n", l->row);
-                   return false;
-                }
-
-                l = stdin_read_line();
-                if (!read_post_img_line(l)) {
-                   na_printf("Could not parse post image line at row %u \n", l->row);
-                   return false;
-                }
-
-                state = PARSE_STATE_EXPECT_HUNK;
-                break;
+        case PARSE_STATE_EXPECT_DIFF:
+            if (!is_diff_header(l)) {
+                na_printf("Expected diff header at row %u\n", l->row);
+                return false;
             }
-            case PARSE_STATE_EXPECT_HUNK: {
-                if (!is_hunk_header(l)) {
-                    na_printf("Expected hunk header at row %u\n", l->row);
-                    return false;
-                }
 
-                h = alloc_hunk(&d->ha);
-
-                if (!set_hunk_header(h, l)) {
-                    na_printf("Failed to set hunk header at row %u\n", l->row);
-                    return false;
-                }
-
-                l = stdin_read_line();
-                try_ret(read_hunk_line(l, h));
-
-                state = PARSE_STATE_ACCEPT_ALL;
-
-                break;
+            d = alloc_diff(da);
+            if (!set_diff_header(d, l)) {
+                na_printf("Could not set diff header at row %u\n", l->row);
+                return false;
             }
-            case PARSE_STATE_ACCEPT_ALL: {
+
+            try_ret(read_extended_header_lines(d));
+
+            if (!d->expect_line_changes) {
+                l = stdin_read_line();
+
                 if (l->data == NULL)
                     return true;
 
-                if (is_diff_header(l)) {
-                    state = PARSE_STATE_EXPECT_DIFF;
-                    stdin_reset_cur_line();
-                }
-                else if (is_hunk_header(l)) {
-                    state = PARSE_STATE_EXPECT_HUNK;
-                    stdin_reset_cur_line();
-                }
-                else
-                    try_ret(read_hunk_line(l, h));
+                stdin_reset_cur_line();
 
-                break;
+                /* Goto next diff */
+                continue;
             }
+
+            l = stdin_read_line();
+            if (!read_pre_img_line(l)) {
+               na_printf("Could not parse pre image line at row %u \n", l->row);
+               return false;
+            }
+
+            l = stdin_read_line();
+            if (!read_post_img_line(l)) {
+               na_printf("Could not parse post image line at row %u \n", l->row);
+               return false;
+            }
+
+            state = PARSE_STATE_EXPECT_HUNK;
+            break;
+
+        case PARSE_STATE_EXPECT_HUNK:
+            if (!is_hunk_header(l)) {
+                na_printf("Expected hunk header at row %u\n", l->row);
+                return false;
+            }
+
+            h = alloc_hunk(&d->ha);
+
+            if (!set_hunk_header(h, l)) {
+                na_printf("Failed to set hunk header at row %u\n", l->row);
+                return false;
+            }
+
+            l = stdin_read_line();
+            try_ret(read_hunk_line(l, h));
+
+            state = PARSE_STATE_ACCEPT_ALL;
+
+            break;
+
+        case PARSE_STATE_ACCEPT_ALL:
+            if (l->data == NULL)
+                return true;
+
+            if (is_diff_header(l)) {
+                state = PARSE_STATE_EXPECT_DIFF;
+                stdin_reset_cur_line();
+            } else if (is_hunk_header(l)) {
+                state = PARSE_STATE_EXPECT_HUNK;
+                stdin_reset_cur_line();
+            } else {
+                try_ret(read_hunk_line(l, h));
+            }
+
+            break;
         }
     }
 
