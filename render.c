@@ -122,13 +122,7 @@ convert_tabs(char ** data, unsigned * len)
 static bool
 populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 {
-    enum populate_state {
-        STATE_NORMAL,
-        STATE_PRE,
-        STATE_POST,
-    };
-
-    enum populate_state state = STATE_NORMAL;
+    enum { STATE_NORMAL, STATE_PRE, STATE_POST } state = STATE_NORMAL;
 
     struct render_line_array * a0 = &p->a0;
     struct render_line_array * a1 = &p->a1;
