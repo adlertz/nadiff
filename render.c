@@ -29,11 +29,7 @@ static struct window list_window;
 static struct window diff0_window;
 static struct window diff1_window;
 
-static char * pre_line  = "----------------------------------------";
-static char * post_line = "++++++++++++++++++++++++++++++++++++++++";
-static unsigned len_pre_post_line = 40;
-
-#define LINE_NBR_WIDTH 9
+#define LINE_NBR_WIDTH 5
 
 struct coord {
     int x, y;
@@ -127,16 +123,12 @@ static bool
 populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 {
     enum populate_state {
-        POPULATE_STATE_NORMAL,
-        POPULATE_STATE_PRE_ADD,
-        POPULATE_STATE_POST_ADD,
-        POPULATE_STATE_PRE_CHANGE,
-        POPULATE_STATE_POST_CHANGE,
+        STATE_NORMAL,
+        STATE_PRE,
+        STATE_POST,
     };
 
-    enum populate_state state = POPULATE_STATE_NORMAL;
-
-    unsigned change_nr = 0;
+    enum populate_state state = STATE_NORMAL;
 
     struct render_line_array * a0 = &p->a0;
     struct render_line_array * a1 = &p->a1;
@@ -180,6 +172,9 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
         unsigned pre_line_nr = h->pre_line_nr;
         unsigned post_line_nr = h->post_line_nr;
 
+        unsigned num_pre_lines = 0;
+        unsigned num_post_lines = 0;
+
         for (unsigned j = 0; j < hla->size; ++j) {
             struct hunk_line * hl = &hla->data[j];
 
@@ -190,6 +185,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 
             switch (hl->type) {
                 case PRE_LINE: {
+
                     l0 = alloc_render_line(a0);
                     *l0 = (struct render_line) {
                         .type = RENDER_LINE_PRE,
@@ -198,25 +194,9 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                         .line_nr = pre_line_nr++,
                     };
 
-                    if (state != POPULATE_STATE_PRE_ADD) {
-                        state = POPULATE_STATE_PRE_ADD;
+                    state = STATE_PRE;
 
-                        change_nr++;
-
-                        /* first time we encounter pre_add, add a line on post */
-                        l1 = alloc_render_line(a1);
-                        *l1 = (struct render_line) {
-                            .type = RENDER_LINE_PRE_LINE,
-                            .data = pre_line,
-                            .len = len_pre_post_line,
-                            .new_change = true,
-                            .change_number = change_nr,
-                        };
-
-                        l0->new_change = true;
-                    }
-
-                    l0->change_number = change_nr;
+                    num_pre_lines++;
 
                     break;
                 }
@@ -229,30 +209,47 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                         .line_nr = post_line_nr++,
                     };
 
-                    if (state != POPULATE_STATE_POST_ADD) {
-                        state = POPULATE_STATE_POST_ADD;
+                    state = STATE_POST;
 
-                        change_nr++;
-
-                        /* first time we encounter post_add, add a line on re */
-                        l0 = alloc_render_line(a0);
-                        *l0 = (struct render_line) {
-                            .type = RENDER_LINE_POST_LINE,
-                            .data = post_line,
-                            .len = len_pre_post_line,
-                            .new_change = true,
-                            .change_number = change_nr,
-                        };
-
-                        l1->new_change = true;
-                    }
-
-                    l1->change_number = change_nr;
+                    num_post_lines++;
 
                     break;
                 }
                 default: {
-                    state = POPULATE_STATE_NORMAL;
+                    if (state == STATE_PRE) {
+
+                        /* pre -> normal. We should pad with post lines. */
+                        if (num_post_lines) {
+                            /* Sanity check, we should not have any post lines */
+                            na_printf("Should not encounter any post lines\n");
+                            return false;
+                        }
+
+                        for (unsigned j = 0; j < num_pre_lines; ++j) {
+                            l1 = alloc_render_line(a1);
+                            l1->type = RENDER_LINE_POST_LINE;
+                        }
+                    } else if (state == STATE_POST) {
+                        /* pre -> post -> normal or post -> normal. Should possibly pad either
+                         * pre or post lines. */
+                        if (num_pre_lines > num_post_lines) {
+                            /* More pre than post lines, pad with post lines */
+                            for (unsigned j = 0; j < (num_pre_lines - num_post_lines); ++j) {
+                                struct render_line *l1 = alloc_render_line(a1);
+                                l1->type = RENDER_LINE_POST_LINE;
+                            }
+                        } else if (num_post_lines > num_pre_lines) {
+                            /* more post than pre lines, pad with pre lines */
+                            for (unsigned j = 0; j < (num_post_lines - num_pre_lines); ++j) {
+                                struct render_line *l0 = alloc_render_line(a0);
+                                l0->type = RENDER_LINE_PRE_LINE;
+                            }
+                        }
+                    }
+
+                    num_pre_lines = 0;
+                    num_post_lines = 0;
+                    state = STATE_NORMAL;
 
                     l0 = alloc_render_line(a0);
                     *l0 = (struct render_line) {
@@ -278,6 +275,25 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
             if (l1 && l1->len > p->len_a1)
                 p->len_a1 = l1->len;
         }
+
+        /* It could be that we are ending with a pre or a post instead of a normal.
+         * Then we need to make sure we are not missin to add any pad lines */
+        if (num_pre_lines || num_post_lines) {
+            if (num_pre_lines > num_post_lines) {
+                /* more pre than post, pad with post lines. */
+                for (unsigned j = 0; j < (num_pre_lines - num_post_lines); ++j) {
+                    struct render_line *l1 = alloc_render_line(a1);
+                    l1->type = RENDER_LINE_POST_LINE;
+                }
+            } else if (num_post_lines > num_pre_lines) {
+                /* more post than pre, pad with pre lines. */
+                for (unsigned j = 0; j < (num_post_lines - num_pre_lines); ++j) {
+                    struct render_line *l0 = alloc_render_line(a0);
+                    l0->type = RENDER_LINE_PRE_LINE;
+                }
+            }
+
+        }
     }
 
     p->is_populated = true;
@@ -288,9 +304,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 static bool
 display_line_number(struct render_line * l, char * line, int window_width)
 {
-    const char * LINE_NUMBER = "    %4u";
-    const char * CHANGE_NUMBER = "%3u";
-    const char * CHANGE_AND_LINE_NUMBERS = "%3u %4u";
+    const char * LINE_NUMBER = "%4u";
 
     switch (l->type) {
         case RENDER_LINE_SPACE:
@@ -302,11 +316,11 @@ display_line_number(struct render_line * l, char * line, int window_width)
             break;
         case RENDER_LINE_POST_LINE:
         case RENDER_LINE_PRE_LINE:
-            if (l->type == RENDER_LINE_POST_LINE)
-                vt100_set_green_foreground();
-            else
+            if (l->type == RENDER_LINE_PRE_LINE)
                 vt100_set_red_foreground();
-            snprintf(line, window_width, CHANGE_NUMBER, l->change_number);
+            else
+                vt100_set_green_foreground();
+            snprintf(line, window_width, "   ░");
             break;
         case RENDER_LINE_PRE:
         case RENDER_LINE_POST:
@@ -314,10 +328,7 @@ display_line_number(struct render_line * l, char * line, int window_width)
                 vt100_set_red_foreground();
             else
                 vt100_set_green_foreground();
-            if (l->new_change)
-                snprintf(line, window_width, CHANGE_AND_LINE_NUMBERS, l->change_number, l->line_nr);
-            else
-                snprintf(line, window_width, LINE_NUMBER, l->line_nr);
+            snprintf(line, window_width, LINE_NUMBER, l->line_nr);
             break;
         default:
             na_printf("Should not enter here with type: %u\n" , l->type);
@@ -334,6 +345,8 @@ display_line(struct render_line * l, int window_width)
 {
     switch (l->type) {
         case RENDER_LINE_SPACE:
+        case RENDER_LINE_PRE_LINE:
+        case RENDER_LINE_POST_LINE:
             return true;
         case RENDER_LINE_SECTION_NAME:
             vt100_set_underline();
@@ -342,11 +355,9 @@ display_line(struct render_line * l, int window_width)
             vt100_set_default_colors();
             break;
         case RENDER_LINE_POST:
-        case RENDER_LINE_POST_LINE:
             vt100_set_green_foreground();
             break;
         case RENDER_LINE_PRE:
-        case RENDER_LINE_PRE_LINE:
             vt100_set_red_foreground();
             break;
         default:

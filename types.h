@@ -93,10 +93,6 @@ struct render_line {
     char * data; /* probably just pointing to data inside a hunk_line */
     unsigned len;
     unsigned line_nr;
-
-    /* change */
-    bool new_change;
-    unsigned change_number;
 };
 
 struct render_line_array {
