@@ -44,30 +44,30 @@ vt100_read_key(int fd)
         return KEY_TYPE_ERROR;
 
     switch (c) {
-        case 'q':
-            return KEY_TYPE_EXIT;
-        case 'N':
-            return KEY_TYPE_PREV_DIFF;
-        case 'n':
-            return KEY_TYPE_NEXT_DIFF;
-        case 'a':
-            return KEY_TYPE_MOVE_DIFF0_UP;
-        case 'z':
-            return KEY_TYPE_MOVE_DIFF0_DOWN;
-        case 's':
-            return KEY_TYPE_MOVE_DIFF1_UP;
-        case 'x':
-            return KEY_TYPE_MOVE_DIFF1_DOWN;
-        case 'd':
-            return KEY_TYPE_MOVE_DIFFS_UP;
-        case 'c':
-            return KEY_TYPE_MOVE_DIFFS_DOWN;
-        case 'w':
-            return KEY_TYPE_MOVE_DIFFS_LEFT;
-        case 'e':
-            return KEY_TYPE_MOVE_DIFFS_RIGHT;
-        default:
-            return KEY_TYPE_UNKNOWN;
+    case 'q':
+        return KEY_TYPE_EXIT;
+    case 'N':
+        return KEY_TYPE_PREV_DIFF;
+    case 'n':
+        return KEY_TYPE_NEXT_DIFF;
+    case 'a':
+        return KEY_TYPE_MOVE_DIFF0_UP;
+    case 'z':
+        return KEY_TYPE_MOVE_DIFF0_DOWN;
+    case 's':
+        return KEY_TYPE_MOVE_DIFF1_UP;
+    case 'x':
+        return KEY_TYPE_MOVE_DIFF1_DOWN;
+    case 'd':
+        return KEY_TYPE_MOVE_DIFFS_UP;
+    case 'c':
+        return KEY_TYPE_MOVE_DIFFS_DOWN;
+    case 'w':
+        return KEY_TYPE_MOVE_DIFFS_LEFT;
+    case 'e':
+        return KEY_TYPE_MOVE_DIFFS_RIGHT;
+    default:
+        return KEY_TYPE_UNKNOWN;
     }
 }
 

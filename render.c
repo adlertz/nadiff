@@ -290,32 +290,32 @@ display_line_number(struct render_line * l, char * line, int window_width)
     const char * LINE_NUMBER = "%4u";
 
     switch (l->type) {
-        case RENDER_LINE_SPACE:
-        case RENDER_LINE_SECTION_NAME:
-            return true;
-        case RENDER_LINE_NORMAL:
-            vt100_set_default_colors();
-            snprintf(line, window_width, LINE_NUMBER, l->line_nr);
-            break;
-        case RENDER_LINE_POST_LINE:
-        case RENDER_LINE_PRE_LINE:
-            if (l->type == RENDER_LINE_PRE_LINE)
-                vt100_set_red_foreground();
-            else
-                vt100_set_green_foreground();
-            snprintf(line, window_width, "   ░");
-            break;
-        case RENDER_LINE_PRE:
-        case RENDER_LINE_POST:
-            if (l->type == RENDER_LINE_PRE)
-                vt100_set_red_foreground();
-            else
-                vt100_set_green_foreground();
-            snprintf(line, window_width, LINE_NUMBER, l->line_nr);
-            break;
-        default:
-            na_printf("Should not enter here with type: %u\n" , l->type);
-            return false;
+    case RENDER_LINE_SPACE:
+    case RENDER_LINE_SECTION_NAME:
+        return true;
+    case RENDER_LINE_NORMAL:
+        vt100_set_default_colors();
+        snprintf(line, window_width, LINE_NUMBER, l->line_nr);
+        break;
+    case RENDER_LINE_POST_LINE:
+    case RENDER_LINE_PRE_LINE:
+        if (l->type == RENDER_LINE_PRE_LINE)
+            vt100_set_red_foreground();
+        else
+            vt100_set_green_foreground();
+        snprintf(line, window_width, "   ░");
+        break;
+    case RENDER_LINE_PRE:
+    case RENDER_LINE_POST:
+        if (l->type == RENDER_LINE_PRE)
+            vt100_set_red_foreground();
+        else
+            vt100_set_green_foreground();
+        snprintf(line, window_width, LINE_NUMBER, l->line_nr);
+        break;
+    default:
+        na_printf("Should not enter here with type: %u\n" , l->type);
+        return false;
     }
 
     vt100_write(line, strlen(line), window_width);
@@ -327,25 +327,25 @@ static bool
 display_line(struct render_line * l, int window_width)
 {
     switch (l->type) {
-        case RENDER_LINE_SPACE:
-        case RENDER_LINE_PRE_LINE:
-        case RENDER_LINE_POST_LINE:
-            return true;
-        case RENDER_LINE_SECTION_NAME:
-            vt100_set_underline();
-            break;
-        case RENDER_LINE_NORMAL:
-            vt100_set_default_colors();
-            break;
-        case RENDER_LINE_POST:
-            vt100_set_green_foreground();
-            break;
-        case RENDER_LINE_PRE:
-            vt100_set_red_foreground();
-            break;
-        default:
-            na_printf("Should not enter here with type: %u\n" , l->type);
-            return false;
+    case RENDER_LINE_SPACE:
+    case RENDER_LINE_PRE_LINE:
+    case RENDER_LINE_POST_LINE:
+        return true;
+    case RENDER_LINE_SECTION_NAME:
+        vt100_set_underline();
+        break;
+    case RENDER_LINE_NORMAL:
+        vt100_set_default_colors();
+        break;
+    case RENDER_LINE_POST:
+        vt100_set_green_foreground();
+        break;
+    case RENDER_LINE_PRE:
+        vt100_set_red_foreground();
+        break;
+    default:
+        na_printf("Should not enter here with type: %u\n" , l->type);
+        return false;
     }
 
     if (horizontal_offset < l->len)
@@ -525,113 +525,113 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
         struct render_line_pair * p  = &pa->data[diff_idx];
 
         switch (key) {
-            case KEY_TYPE_NONE:
-                break;
-            case KEY_TYPE_UNKNOWN:
-                break;
-            case KEY_TYPE_ERROR:
-                return false;
-            case KEY_TYPE_EXIT:
-                return true;
-            case KEY_TYPE_PREV_DIFF:
-                if (diff_idx > 0) {
-                    diff_idx--;
+        case KEY_TYPE_NONE:
+            break;
+        case KEY_TYPE_UNKNOWN:
+            break;
+        case KEY_TYPE_ERROR:
+            return false;
+        case KEY_TYPE_EXIT:
+            return true;
+        case KEY_TYPE_PREV_DIFF:
+            if (diff_idx > 0) {
+                diff_idx--;
 
-                    diff0_start = 0;
-                    diff1_start = 0;
-                    horizontal_offset = 0;
+                diff0_start = 0;
+                diff1_start = 0;
+                horizontal_offset = 0;
 
-                    if (diff_idx < list_visible_start) {
-                        list_visible_start = diff_idx;
+                if (diff_idx < list_visible_start) {
+                    list_visible_start = diff_idx;
 
-                        list_visible_end = diff_idx + (list_window.br.y - 3);
-                    }
+                    list_visible_end = diff_idx + (list_window.br.y - 3);
+                }
 
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_NEXT_DIFF:
-                if (diff_idx < da->size - 1) {
-                    diff_idx++;
-
-                    diff0_start = 0;
-                    diff1_start = 0;
-                    horizontal_offset = 0;
-
-                    if (diff_idx > list_window.br.y - 3) { // because the list from third row
-
-                        if (diff_idx > list_visible_end)
-                            list_visible_end = diff_idx;
-
-                        list_visible_start = list_visible_end - (list_window.br.y - 3);
-                    }
-
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_PREV_CHANGE:
-                break;
-            case KEY_TYPE_NEXT_CHANGE:
-                break;
-            case KEY_TYPE_MOVE_DIFF0_UP:
-                if (diff0_start > 0) {
-                    diff0_start -= 5;
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_MOVE_DIFF0_DOWN:
-                if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
-                    diff0_start += 5;
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_MOVE_DIFF1_UP:
-                if (diff1_start > 0) {
-                    diff1_start -= 5;
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_MOVE_DIFF1_DOWN:
-                if (diff1_start + diff1_window.br.y - 10 < p->a1.size) {
-                    diff1_start += 5;
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_MOVE_DIFFS_UP:
-                if (diff1_start > 0) {
-                    diff1_start -= 5;
-                    redraw = true;
-                }
-                if (diff0_start > 0) {
-                    diff0_start -= 5;
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_MOVE_DIFFS_DOWN:
-                if (diff1_start + diff1_window.br.y - 10 < p->a1.size) {
-                    diff1_start += 5;
-                    redraw = true;
-                }
-                if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
-                    diff0_start += 5;
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_MOVE_DIFFS_LEFT:
-                if (horizontal_offset > 0) {
-                    horizontal_offset--;
-                    redraw = true;
-                }
-                break;
-            case KEY_TYPE_MOVE_DIFFS_RIGHT: {
-                unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - LINE_NBR_WIDTH;
-                unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - LINE_NBR_WIDTH;
-                if (horizontal_offset + diff0_offs< p->len_a0 || horizontal_offset + diff1_offs < p->len_a1) {
-                    horizontal_offset++;
-                    redraw = true;
-                }
-                break;
+                redraw = true;
             }
+            break;
+        case KEY_TYPE_NEXT_DIFF:
+            if (diff_idx < da->size - 1) {
+                diff_idx++;
+
+                diff0_start = 0;
+                diff1_start = 0;
+                horizontal_offset = 0;
+
+                if (diff_idx > list_window.br.y - 3) { // because the list from third row
+
+                    if (diff_idx > list_visible_end)
+                        list_visible_end = diff_idx;
+
+                    list_visible_start = list_visible_end - (list_window.br.y - 3);
+                }
+
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_PREV_CHANGE:
+            break;
+        case KEY_TYPE_NEXT_CHANGE:
+            break;
+        case KEY_TYPE_MOVE_DIFF0_UP:
+            if (diff0_start > 0) {
+                diff0_start -= 5;
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_MOVE_DIFF0_DOWN:
+            if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
+                diff0_start += 5;
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_MOVE_DIFF1_UP:
+            if (diff1_start > 0) {
+                diff1_start -= 5;
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_MOVE_DIFF1_DOWN:
+            if (diff1_start + diff1_window.br.y - 10 < p->a1.size) {
+                diff1_start += 5;
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_MOVE_DIFFS_UP:
+            if (diff1_start > 0) {
+                diff1_start -= 5;
+                redraw = true;
+            }
+            if (diff0_start > 0) {
+                diff0_start -= 5;
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_MOVE_DIFFS_DOWN:
+            if (diff1_start + diff1_window.br.y - 10 < p->a1.size) {
+                diff1_start += 5;
+                redraw = true;
+            }
+            if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
+                diff0_start += 5;
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_MOVE_DIFFS_LEFT:
+            if (horizontal_offset > 0) {
+                horizontal_offset--;
+                redraw = true;
+            }
+            break;
+        case KEY_TYPE_MOVE_DIFFS_RIGHT: {
+            unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - LINE_NBR_WIDTH;
+            unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - LINE_NBR_WIDTH;
+            if (horizontal_offset + diff0_offs< p->len_a0 || horizontal_offset + diff1_offs < p->len_a1) {
+                horizontal_offset++;
+                redraw = true;
+            }
+            break;
+        }
         }
 
         if (redraw) {
