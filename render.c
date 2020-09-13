@@ -119,53 +119,56 @@ convert_tabs(char ** data, unsigned * len)
     return true;
 }
 
+static void
+render_section_name(char * section_name, struct render_line_array * a0,
+    struct render_line_array * a1, bool first_section)
+{
+    if (section_name == NULL)
+        return;
+
+    unsigned len = strlen(section_name);
+
+    convert_tabs(&section_name, &len);
+
+    /* add some padding before the next section */
+    if (!first_section) {
+        struct render_line * l = alloc_render_line(a0);
+        l->type = RENDER_LINE_SPACE;
+        l = alloc_render_line(a0);
+        l->type = RENDER_LINE_SPACE;
+        l = alloc_render_line(a1);
+        l->type = RENDER_LINE_SPACE;
+        l = alloc_render_line(a1);
+        l->type = RENDER_LINE_SPACE;
+    }
+
+    struct render_line * l0 = alloc_render_line(a0);
+    *l0 = (struct render_line) {
+        .type = RENDER_LINE_SECTION_NAME, .data = section_name, .len = len
+    };
+
+    struct render_line * l1 = alloc_render_line(a1);
+    *l1 = (struct render_line) {
+        .type = RENDER_LINE_SECTION_NAME, .data = section_name, .len = len
+    };
+}
+
 static bool
 populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 {
     enum { STATE_NORMAL, STATE_PRE, STATE_POST } state = STATE_NORMAL;
-
     struct render_line_array * a0 = &p->a0;
     struct render_line_array * a1 = &p->a1;
-
     struct hunk_array const * ha = &d->ha;
+
     for (unsigned i = 0; i < ha->size; ++i) {
         struct hunk * h = &ha->data[i];
 
-        if (h->section_name != NULL) {
-            unsigned len = strlen(h->section_name);
-
-            convert_tabs(&h->section_name, &len);
-
-            if (i != 0) {
-                struct render_line * l = alloc_render_line(a0);
-                l->type = RENDER_LINE_SPACE;
-                l = alloc_render_line(a0);
-                l->type = RENDER_LINE_SPACE;
-                l = alloc_render_line(a1);
-                l->type = RENDER_LINE_SPACE;
-                l = alloc_render_line(a1);
-                l->type = RENDER_LINE_SPACE;
-            }
-
-            struct render_line * l0 = alloc_render_line(a0);
-            *l0 = (struct render_line) {
-                .type = RENDER_LINE_SECTION_NAME,
-                .data = h->section_name,
-                .len = len,
-            };
-
-            struct render_line * l1 = alloc_render_line(a1);
-            *l1 = (struct render_line) {
-                .type = RENDER_LINE_SECTION_NAME,
-                .data = h->section_name,
-                .len = len,
-            };
-        }
+        render_section_name(h->section_name, a0, a1, i == 0);
 
         struct hunk_line_array const * hla = &h->hla;
         unsigned pre_line_nr = h->pre_line_nr;
         unsigned post_line_nr = h->post_line_nr;
-
         unsigned num_pre_lines = 0;
         unsigned num_post_lines = 0;
 
@@ -178,94 +181,80 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
             struct render_line * l1 = NULL;
 
             switch (hl->type) {
-                case PRE_LINE: {
+            case PRE_LINE:
+                l0 = alloc_render_line(a0);
+                *l0 = (struct render_line) {
+                    .type = RENDER_LINE_PRE,
+                    .data = hl->line, .len = hl->len, .line_nr = pre_line_nr++
+                };
 
-                    l0 = alloc_render_line(a0);
-                    *l0 = (struct render_line) {
-                        .type = RENDER_LINE_PRE,
-                        .data = hl->line,
-                        .len = hl->len,
-                        .line_nr = pre_line_nr++,
-                    };
+                state = STATE_PRE;
 
-                    state = STATE_PRE;
+                num_pre_lines++;
 
-                    num_pre_lines++;
+                break;
+            case POST_LINE:
+                l1 = alloc_render_line(a1);
+                *l1 = (struct render_line) {
+                    .type = RENDER_LINE_POST,
+                    .data = hl->line, .len = hl->len, .line_nr = post_line_nr++
+                };
 
-                    break;
-                }
-                case POST_LINE: {
-                    l1 = alloc_render_line(a1);
-                    *l1 = (struct render_line) {
-                        .type = RENDER_LINE_POST,
-                        .data = hl->line,
-                        .len = hl->len,
-                        .line_nr = post_line_nr++,
-                    };
+                state = STATE_POST;
 
-                    state = STATE_POST;
+                num_post_lines++;
 
-                    num_post_lines++;
-
-                    break;
-                }
-                default: {
-                    if (state == STATE_PRE) {
-
-                        /* pre -> normal. We should pad with post lines. */
-                        if (num_post_lines) {
-                            /* Sanity check, we should not have any post lines */
-                            na_printf("Should not encounter any post lines\n");
-                            return false;
-                        }
-
-                        for (unsigned j = 0; j < num_pre_lines; ++j) {
-                            l1 = alloc_render_line(a1);
-                            l1->type = RENDER_LINE_POST_LINE;
-                        }
-                    } else if (state == STATE_POST) {
-                        /* pre -> post -> normal or post -> normal. Should possibly pad either
-                         * pre or post lines. */
-                        if (num_pre_lines > num_post_lines) {
-                            /* More pre than post lines, pad with post lines */
-                            for (unsigned j = 0; j < (num_pre_lines - num_post_lines); ++j) {
-                                struct render_line *l1 = alloc_render_line(a1);
-                                l1->type = RENDER_LINE_POST_LINE;
-                            }
-                        } else if (num_post_lines > num_pre_lines) {
-                            /* more post than pre lines, pad with pre lines */
-                            for (unsigned j = 0; j < (num_post_lines - num_pre_lines); ++j) {
-                                struct render_line *l0 = alloc_render_line(a0);
-                                l0->type = RENDER_LINE_PRE_LINE;
-                            }
-                        }
+                break;
+            default:
+                if (state == STATE_PRE) {
+                    /* pre -> normal. We should pad with post lines. */
+                    if (num_post_lines) {
+                        /* Sanity check, we should not have any post lines */
+                        na_printf("Should not encounter any post lines\n");
+                        return false;
                     }
 
-                    num_pre_lines = 0;
-                    num_post_lines = 0;
-                    state = STATE_NORMAL;
-
-                    l0 = alloc_render_line(a0);
-                    *l0 = (struct render_line) {
-                        .type = RENDER_LINE_NORMAL,
-                        .data = hl->line,
-                        .len = hl->len,
-                        .line_nr = pre_line_nr++,
-                    };
-
-                    l1 = alloc_render_line(a1);
-                    *l1 = (struct render_line) {
-                        .type = RENDER_LINE_NORMAL,
-                        .data = hl->line,
-                        .len = hl->len,
-                        .line_nr = post_line_nr++,
-                    };
+                    for (unsigned i = 0; i < num_pre_lines; ++i) {
+                        l1 = alloc_render_line(a1);
+                        l1->type = RENDER_LINE_POST_LINE;
+                    }
+                } else if (state == STATE_POST) {
+                    /* pre -> post -> normal or post -> normal. Should possibly pad either
+                     * pre or post lines. */
+                    if (num_pre_lines > num_post_lines) {
+                        /* More pre than post lines, pad with post lines */
+                        for (unsigned p = 0; p < (num_pre_lines - num_post_lines); ++p) {
+                            struct render_line *l1 = alloc_render_line(a1);
+                            l1->type = RENDER_LINE_POST_LINE;
+                        }
+                    } else if (num_post_lines > num_pre_lines) {
+                        /* more post than pre lines, pad with pre lines */
+                        for (unsigned p = 0; p < (num_post_lines - num_pre_lines); ++p) {
+                            struct render_line *l0 = alloc_render_line(a0);
+                            l0->type = RENDER_LINE_PRE_LINE;
+                        }
+                    }
                 }
+
+                num_pre_lines = 0;
+                num_post_lines = 0;
+                state = STATE_NORMAL;
+
+                l0 = alloc_render_line(a0);
+                *l0 = (struct render_line) {
+                    .type = RENDER_LINE_NORMAL,
+                    .data = hl->line, .len = hl->len, .line_nr = pre_line_nr++
+                };
+
+                l1 = alloc_render_line(a1);
+                *l1 = (struct render_line) {
+                    .type = RENDER_LINE_NORMAL,
+                    .data = hl->line, .len = hl->len, .line_nr = post_line_nr++
+                };
             }
 
             if (l0 && l0->len > p->len_a0)
                 p->len_a0 = l0->len;
-
             if (l1 && l1->len > p->len_a1)
                 p->len_a1 = l1->len;
         }
@@ -275,13 +264,13 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
         if (num_pre_lines || num_post_lines) {
             if (num_pre_lines > num_post_lines) {
                 /* more pre than post, pad with post lines. */
-                for (unsigned j = 0; j < (num_pre_lines - num_post_lines); ++j) {
+                for (unsigned p = 0; p < (num_pre_lines - num_post_lines); ++p) {
                     struct render_line *l1 = alloc_render_line(a1);
                     l1->type = RENDER_LINE_POST_LINE;
                 }
             } else if (num_post_lines > num_pre_lines) {
                 /* more post than pre, pad with pre lines. */
-                for (unsigned j = 0; j < (num_post_lines - num_pre_lines); ++j) {
+                for (unsigned p = 0; p < (num_post_lines - num_pre_lines); ++p) {
                     struct render_line *l0 = alloc_render_line(a0);
                     l0->type = RENDER_LINE_PRE_LINE;
                 }
