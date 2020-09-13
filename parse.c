@@ -582,15 +582,11 @@ read_hunk_line(struct line * l, struct hunk * h)
 }
 
 
-enum parse_state {
-    PARSE_STATE_EXPECT_DIFF,
-    PARSE_STATE_EXPECT_HUNK,
-    PARSE_STATE_ACCEPT_ALL
-};
-
 static bool
 parse_start(struct diff_array * da)
 {
+    enum { STATE_EXPECT_DIFF, STATE_EXPECT_HUNK, STATE_ACCEPT_ALL } state = STATE_EXPECT_DIFF;
+
     struct line * l = stdin_read_line();
 
     if (l->data == NULL) {
@@ -600,15 +596,13 @@ parse_start(struct diff_array * da)
 
     stdin_reset_cur_line();
 
-    enum parse_state state = PARSE_STATE_EXPECT_DIFF;
-
     struct diff * d = NULL;
     struct hunk * h = NULL;
     for (;;) {
         struct line * l = stdin_read_line();
 
         switch (state) {
-        case PARSE_STATE_EXPECT_DIFF:
+        case STATE_EXPECT_DIFF:
             if (!is_diff_header(l)) {
                 na_printf("Expected diff header at row %u\n", l->row);
                 return false;
@@ -646,10 +640,10 @@ parse_start(struct diff_array * da)
                return false;
             }
 
-            state = PARSE_STATE_EXPECT_HUNK;
+            state = STATE_EXPECT_HUNK;
             break;
 
-        case PARSE_STATE_EXPECT_HUNK:
+        case STATE_EXPECT_HUNK:
             if (!is_hunk_header(l)) {
                 na_printf("Expected hunk header at row %u\n", l->row);
                 return false;
@@ -665,19 +659,19 @@ parse_start(struct diff_array * da)
             l = stdin_read_line();
             try_ret(read_hunk_line(l, h));
 
-            state = PARSE_STATE_ACCEPT_ALL;
+            state = STATE_ACCEPT_ALL;
 
             break;
 
-        case PARSE_STATE_ACCEPT_ALL:
+        case STATE_ACCEPT_ALL:
             if (l->data == NULL)
                 return true;
 
             if (is_diff_header(l)) {
-                state = PARSE_STATE_EXPECT_DIFF;
+                state = STATE_EXPECT_DIFF;
                 stdin_reset_cur_line();
             } else if (is_hunk_header(l)) {
-                state = PARSE_STATE_EXPECT_HUNK;
+                state = STATE_EXPECT_HUNK;
                 stdin_reset_cur_line();
             } else {
                 try_ret(read_hunk_line(l, h));
