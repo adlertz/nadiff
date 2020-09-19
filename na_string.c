@@ -24,9 +24,10 @@ bool
 get_number(struct line * l, unsigned * cur_pos, unsigned * out_num)
 {
     unsigned num = 0;
+    unsigned pos = *cur_pos;
 
     while (true) {
-        int digit = get_char(l, *cur_pos);
+        int digit = get_char(l, pos);
         if (digit < 0) {
             na_printf("Failed to parse number at row %u\n", l->row);
             return false;
@@ -38,9 +39,11 @@ get_number(struct line * l, unsigned * cur_pos, unsigned * out_num)
 
         unsigned n = digit - '0';
         num = num * 10 + n;
-        (*cur_pos)++;
+        pos++;
     }
 
+
+    *cur_pos = pos;
     *out_num = num;
 
     return true;
