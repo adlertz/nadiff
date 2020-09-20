@@ -42,16 +42,16 @@ NOTE: Tabs are displayed as `~   `
 
 
 ### Scrolling in diff views
+    d  Up in both views
+    c  Down in both views
+    w  Left in both views
+    e  Right in both views
+
     a  Up in left view
     z  Down in left view
 
     s  Up in right view
     x  Down in right view
-
-    d  Up in both views
-    c  Down in both views
-    w  Left in both views
-    e  Right in both views
 
 ### Other
     q  Quit
