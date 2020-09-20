@@ -97,6 +97,9 @@ draw_list(struct diff_array * da, struct window * list)
 static bool
 convert_tabs(char ** data, unsigned * len)
 {
+    if (*len == 0)
+        return true;
+
     size_t space_len = strlen_tabs(*data, *len);
     char * new_data = malloc(sizeof(char) * space_len);
 

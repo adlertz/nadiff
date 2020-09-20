@@ -526,14 +526,17 @@ read_hunk_line(struct line * l, struct hunk * h)
 {
     enum hunk_line_type lt = get_hunk_line_type(l);
 
-    char * code = extract_and_allocate_code_line(l);
-
     struct hunk_line * hl = alloc_hunk_line(&h->hla);
-    *hl = (struct hunk_line) {
-        .line = code,
-        .len = strlen(code),
-        .type = lt,
-    };
+
+    char * code = NULL;
+    unsigned len = 0;
+    if (l->len > 1) {
+        /* if not empty line. 1 char is for initial hunk line type */
+        code = extract_and_allocate_code_line(l);
+        len = strlen(code);
+    }
+
+    *hl = (struct hunk_line) { .line = code, .len = len, .type = lt };
 
     return true;
 }
