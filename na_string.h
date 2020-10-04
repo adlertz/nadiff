@@ -18,4 +18,7 @@ is_char_at_idx(struct line * l, unsigned idx, char expected);
 bool
 get_number(struct line * l, unsigned * cur_pos, unsigned * out_num);
 
+bool
+line_starts_with_string(struct line * l, const char * s);
+
 #endif

@@ -1,6 +1,7 @@
 #include "na_string.h"
 
 #include "error.h"
+#include <string.h>
 
 int
 get_char(struct line * l, unsigned idx)
@@ -45,6 +46,19 @@ get_number(struct line * l, unsigned * cur_pos, unsigned * out_num)
 
     *cur_pos = pos;
     *out_num = num;
+
+    return true;
+}
+
+bool
+line_starts_with_string(struct line * l, const char * s)
+{
+    if (l->data == NULL)
+        return false;
+
+    unsigned slen = strlen(s);
+    for (unsigned i = 0; i < slen; ++i)
+        try_ret(is_char_at_idx(l, i, s[i]));
 
     return true;
 }

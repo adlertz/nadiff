@@ -20,19 +20,6 @@ is_hunk_header(struct line * l)
 }
 
 static bool
-line_starts_with_string(struct line * l, const char * s)
-{
-    if (l->data == NULL)
-        return false;
-
-    unsigned slen = strlen(s);
-    for (unsigned i = 0; i < slen; ++i)
-        try_ret(is_char_at_idx(l, i, s[i]));
-
-    return true;
-}
-
-static bool
 is_diff_header(struct line *l)
 {
     /* Format is diff --git <filename> <filename> */
