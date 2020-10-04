@@ -52,7 +52,8 @@ read_copy_to(struct line * l)
 }
 
 static bool
-read_index_line(struct line * l) {
+read_index_line(struct line * l)
+{
     return line_starts_with_string(l, "index");
 }
 
@@ -430,24 +431,22 @@ parse_start(struct diff_array * da)
                     return true;
 
                 stdin_reset_cur_line();
-
                 /* Goto next diff */
-                continue;
+            } else {
+                l = stdin_read_line();
+                if (!read_pre_img_line(l)) {
+                    na_printf("Could not parse pre image line at row %u \n", l->row);
+                    return false;
+                }
+
+                l = stdin_read_line();
+                if (!read_post_img_line(l)) {
+                    na_printf("Could not parse post image line at row %u \n", l->row);
+                    return false;
+                }
+                state = STATE_EXPECT_HUNK;
             }
 
-            l = stdin_read_line();
-            if (!read_pre_img_line(l)) {
-               na_printf("Could not parse pre image line at row %u \n", l->row);
-               return false;
-            }
-
-            l = stdin_read_line();
-            if (!read_post_img_line(l)) {
-               na_printf("Could not parse post image line at row %u \n", l->row);
-               return false;
-            }
-
-            state = STATE_EXPECT_HUNK;
             break;
 
         case STATE_EXPECT_HUNK:
