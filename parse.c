@@ -20,90 +20,53 @@ is_hunk_header(struct line * l)
 }
 
 static bool
+line_starts_with_string(struct line * l, const char * s)
+{
+    if (l->data == NULL)
+        return false;
+
+    unsigned slen = strlen(s);
+    for (unsigned i = 0; i < slen; ++i)
+        try_ret(is_char_at_idx(l, i, s[i]));
+
+    return true;
+}
+
+static bool
 is_diff_header(struct line *l)
 {
-    unsigned i = 0;
     /* Format is diff --git <filename> <filename> */
-    return is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'f')
-        && is_char_at_idx(l, i++, 'f')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, '-')
-        && is_char_at_idx(l, i++, '-')
-        && is_char_at_idx(l, i++, 'g')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 't')
-        && is_char_at_idx(l, i++, ' ');
+    return line_starts_with_string(l, "diff --git ");
 }
 
 static bool
 read_old_mode(struct line * l)
 {
-    unsigned i = 0;
-    /* TODO also look at the mode */
-    return is_char_at_idx(l, i++, 'o')
-        && is_char_at_idx(l, i++, 'l')
-        && is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'm')
-        && is_char_at_idx(l, i++, 'o')
-        && is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'e');
+    return line_starts_with_string(l, "old mode");
 }
 
 static bool
 read_new_mode(struct line * l)
 {
-    unsigned i = 0;
     /* TODO also look at the mode */
-    return is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'w')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'm')
-        && is_char_at_idx(l, i++, 'o')
-        && is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'e');
+    return line_starts_with_string(l, "new mode");
 }
 
 static bool
 read_copy_from(struct line * l)
 {
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'c')
-        && is_char_at_idx(l, i++, 'o')
-        && is_char_at_idx(l, i++, 'p')
-        && is_char_at_idx(l, i++, 'y')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'f')
-        && is_char_at_idx(l, i++, 'r')
-        && is_char_at_idx(l, i++, 'o')
-        && is_char_at_idx(l, i++, 'm');
+    return line_starts_with_string(l, "copy from");
 }
 
 static bool
 read_copy_to(struct line * l)
 {
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'c')
-        && is_char_at_idx(l, i++, 'o')
-        && is_char_at_idx(l, i++, 'p')
-        && is_char_at_idx(l, i++, 'y')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 't')
-        && is_char_at_idx(l, i++, 'o');
+    return line_starts_with_string(l, "copy to");
 }
 
 static bool
 read_index_line(struct line * l) {
-    unsigned i = 0;
-
-    return is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'x');
+    return line_starts_with_string(l, "index");
 }
 
 static bool
@@ -121,147 +84,44 @@ is_pre_image_add(struct line * l)
 static bool
 is_extended_header_new_line(struct line * l)
 {
-    if (l->data == NULL)
-        return false;
-
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'w')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'f')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'l')
-        && is_char_at_idx(l, i++, 'e');
+    return line_starts_with_string(l, "new file");
 }
 
 static bool
 read_delete_line(struct line * l)
 {
-    if (l->data == NULL)
-        return false;
-
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'l')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 't')
-        && is_char_at_idx(l, i++, 'e');
+    return line_starts_with_string(l, "delete");
 }
 
 static bool
 is_similarity_index_line(struct line * l)
 {
-    if (l->data == NULL)
-        return false;
-
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 's')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'm')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'l')
-        && is_char_at_idx(l, i++, 'a')
-        && is_char_at_idx(l, i++, 'r')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 't')
-        && is_char_at_idx(l, i++, 'y')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'x');
+    return line_starts_with_string(l, "similarity index");
 }
 
 static bool
 is_rename_from_line(struct line * l)
 {
-    if (l->data == NULL)
-        return false;
-
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'r')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'a')
-        && is_char_at_idx(l, i++, 'm')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'f')
-        && is_char_at_idx(l, i++, 'r')
-        && is_char_at_idx(l, i++, 'o')
-        && is_char_at_idx(l, i++, 'm');
+    return line_starts_with_string(l, "rename from");
 }
 
 static bool
 is_rename_to_line(struct line * l)
 {
-    if (l->data == NULL)
-        return false;
-
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'r')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'a')
-        && is_char_at_idx(l, i++, 'm')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 't')
-        && is_char_at_idx(l, i++, 'o');
+    return line_starts_with_string(l, "rename to");
 }
 
 static bool
 is_dissimiliarity_index_line(struct line * l)
 {
-    if (l->data == NULL)
-        return false;
-
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 's')
-        && is_char_at_idx(l, i++, 's')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'm')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'l')
-        && is_char_at_idx(l, i++, 'a')
-        && is_char_at_idx(l, i++, 'r')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 't')
-        && is_char_at_idx(l, i++, 'y')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'd')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 'x');
+    return line_starts_with_string(l, "dissimilarity index");
 }
 
 static bool
 is_binary_file(struct line * l)
 {
-    if (l->data == NULL)
-        return false;
-
     /* TODO Verify that this is the only format of Binary file output. Also add filename checks */
-    unsigned i = 0;
-    return is_char_at_idx(l, i++, 'B')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'n')
-        && is_char_at_idx(l, i++, 'a')
-        && is_char_at_idx(l, i++, 'r')
-        && is_char_at_idx(l, i++, 'y')
-        && is_char_at_idx(l, i++, ' ')
-        && is_char_at_idx(l, i++, 'f')
-        && is_char_at_idx(l, i++, 'i')
-        && is_char_at_idx(l, i++, 'l')
-        && is_char_at_idx(l, i++, 'e')
-        && is_char_at_idx(l, i++, 's')
-        && is_char_at_idx(l, i++, ' ');
+    return line_starts_with_string(l, "Binary files ");
 }
 
 /*
