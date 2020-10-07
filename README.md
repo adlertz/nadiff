@@ -47,11 +47,5 @@ NOTE: Tabs are displayed as `~   `
     w  Left in both views
     e  Right in both views
 
-    a  Up in left view
-    z  Down in left view
-
-    s  Up in right view
-    x  Down in right view
-
 ### Other
     q  Quit

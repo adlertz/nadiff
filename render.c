@@ -4,7 +4,7 @@
 #include "alloc.h"
 #include "compare.h"
 
-
+#include <assert.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
@@ -18,8 +18,7 @@
 
 static bool redraw = false;
 static unsigned diff_idx = 0;
-static unsigned diff0_start = 0;
-static unsigned diff1_start = 0;
+static unsigned diff_start = 0;
 static unsigned horizontal_offset = 0;
 
 static unsigned list_visible_start = 0;
@@ -389,7 +388,7 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
     struct render_line_array * a0 = &p->a0;
     struct render_line_array * a1 = &p->a1;
 
-    for (unsigned i = diff0_start; i < a0->size; ++i) {
+    for (unsigned i = diff_start; i < a0->size; ++i) {
         if (cur_vt100_diff0_row == diff0->br.y)
             break;
 
@@ -411,7 +410,7 @@ draw_windows(struct diff * d, struct window * diff0, struct window * diff1,
 
     vt100_set_default_colors();
 
-    for (unsigned i = diff1_start; i < a1->size; ++i) {
+    for (unsigned i = diff_start; i < a1->size; ++i) {
 
         if (cur_vt100_diff1_row == diff1->br.y)
             break;
@@ -540,8 +539,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
             if (diff_idx > 0) {
                 diff_idx--;
 
-                diff0_start = 0;
-                diff1_start = 0;
+                diff_start = 0;
                 horizontal_offset = 0;
 
                 if (diff_idx < list_visible_start) {
@@ -557,8 +555,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
             if (diff_idx < da->size - 1) {
                 diff_idx++;
 
-                diff0_start = 0;
-                diff1_start = 0;
+                diff_start = 0;
                 horizontal_offset = 0;
 
                 if (diff_idx > list_window.br.y - 3) { // because the list from third row
@@ -576,47 +573,18 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
             break;
         case KEY_TYPE_NEXT_CHANGE:
             break;
-        case KEY_TYPE_MOVE_DIFF0_UP:
-            if (diff0_start > 0) {
-                diff0_start -= 5;
-                redraw = true;
-            }
-            break;
-        case KEY_TYPE_MOVE_DIFF0_DOWN:
-            if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
-                diff0_start += 5;
-                redraw = true;
-            }
-            break;
-        case KEY_TYPE_MOVE_DIFF1_UP:
-            if (diff1_start > 0) {
-                diff1_start -= 5;
-                redraw = true;
-            }
-            break;
-        case KEY_TYPE_MOVE_DIFF1_DOWN:
-            if (diff1_start + diff1_window.br.y - 10 < p->a1.size) {
-                diff1_start += 5;
-                redraw = true;
-            }
-            break;
         case KEY_TYPE_MOVE_DIFFS_UP:
-            if (diff1_start > 0) {
-                diff1_start -= 5;
-                redraw = true;
-            }
-            if (diff0_start > 0) {
-                diff0_start -= 5;
+            if (diff_start > 0) {
+                diff_start -= 5;
                 redraw = true;
             }
             break;
         case KEY_TYPE_MOVE_DIFFS_DOWN:
-            if (diff1_start + diff1_window.br.y - 10 < p->a1.size) {
-                diff1_start += 5;
-                redraw = true;
-            }
-            if (diff0_start + diff0_window.br.y - 10 < p->a0.size) {
-                diff0_start += 5;
+            /* diff0_window and diff1_window are the same height and a0 and a1 are the same size */
+            assert(diff0_window.br.y == diff1_window.br.y);
+            assert(p->a0.size == p->a1.size);
+            if (diff_start + diff0_window.br.y - 10 < p->a0.size) {
+                diff_start += 5;
                 redraw = true;
             }
             break;
