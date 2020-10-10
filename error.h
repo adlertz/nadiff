@@ -1,5 +1,5 @@
-#ifndef _NADIFF_ERROR_H
-#define _NADIFF_ERROR_H
+#ifndef _NADIFF_ERROR_H_
+#define _NADIFF_ERROR_H_
 
 #include <stdio.h>
 
