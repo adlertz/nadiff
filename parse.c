@@ -349,13 +349,16 @@ set_diff_header(struct diff * d, struct line * hdr)
 static char *
 extract_and_allocate_code_line(struct line * l)
 {
-    /* + 1 for '\0' but -1 for '\n' */
-    unsigned size = l->len + 1 - 1 - 1; /* smaller since no '+', '-' or ' ' */
-    char * start = l->data + 1; /* start copying from pos 1 */
+    /* discard first char: '+', '-' or ' ' from size */
+    unsigned size = l->len - 1;
+    /* start after '+', '-' or ' ' */
+    char * start = l->data + 1;
     char * line = malloc(sizeof(char) * size);
-    // TODO think of sizeof(char) here as well
+
+    /* we don't need to copy last character since it will be changed from '\n' to '\0' anyway */
     memcpy(line, start, size - 1);
     line[size - 1] = '\0';
+
     return line;
 }
 
@@ -379,7 +382,7 @@ read_hunk_line(struct line * l, struct hunk * h)
     char * code = NULL;
     unsigned len = 0;
     if (l->len > 1) {
-        /* if not empty line. 1 char is for initial hunk line type */
+        /* if not empty line. 1 char is for initial hunk line type '+', '-' or ' '*/
         code = extract_and_allocate_code_line(l);
         len = strlen(code);
     }
