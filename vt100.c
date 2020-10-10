@@ -96,13 +96,6 @@ vt100_goto_top_left(void)
 void
 vt100_set_inverted_colors(void)
 {
-    /* 30-37 foreground, 40-47 background */
-    /* 30-37 foreground, 40-47 background
-     * 30 = black
-     * 47 = white
-     */
-    //write(STDOUT_FILENO, "\x1b[30m\x1b[47m", 10);
-    //write(STDOUT_FILENO, "\x1b[?5h", 5);
     /* turn on reverse mode */
     write(STDOUT_FILENO, "\x1b[7m", 4);
 }
