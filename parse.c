@@ -273,18 +273,10 @@ static bool
 set_diff_header(struct diff * d, struct line * hdr)
 {
     /* we only accept git diff -p, where -p is default */
+    const char * diff_header_start = "diff --git ";
     unsigned i = 0;
-    try_ret(is_char_at_idx(hdr, i++, 'd'));
-    try_ret(is_char_at_idx(hdr, i++, 'i'));
-    try_ret(is_char_at_idx(hdr, i++, 'f'));
-    try_ret(is_char_at_idx(hdr, i++, 'f'));
-    try_ret(is_char_at_idx(hdr, i++, ' '));
-    try_ret(is_char_at_idx(hdr, i++, '-'));
-    try_ret(is_char_at_idx(hdr, i++, '-'));
-    try_ret(is_char_at_idx(hdr, i++, 'g'));
-    try_ret(is_char_at_idx(hdr, i++, 'i'));
-    try_ret(is_char_at_idx(hdr, i++, 't'));
-    try_ret(is_char_at_idx(hdr, i++, ' '));
+    for (; i < strlen(diff_header_start); ++i)
+        try_ret(is_char_at_idx(hdr, i, diff_header_start[i]));
 
     /* pre image name */
     unsigned start_pos = i;
