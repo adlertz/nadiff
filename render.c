@@ -100,6 +100,11 @@ convert_tabs(char ** data, unsigned * len)
         return true;
 
     size_t space_len = strlen_tabs(*data, *len);
+
+    /* no tabs found? No need to reallocate line */
+    if (space_len == *len)
+        return true;
+
     char * new_data = malloc(sizeof(char) * space_len);
 
     unsigned si = 0;
