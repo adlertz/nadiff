@@ -69,7 +69,7 @@ draw_list(struct diff_array * da, struct window * list)
     for (unsigned i = list_visible_start; i < da->size; ++i) {
         struct diff * d = &da->data[i];
 
-        /* Our we outside screen ? */
+        /* Are we outside screen ? */
         if ((i - list_visible_start + 3) > list->br.y)
             break;
 
