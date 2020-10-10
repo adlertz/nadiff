@@ -4,7 +4,7 @@
 #include <string.h>
 
 int
-get_char(struct line * l, unsigned idx)
+get_char(const struct line * l, unsigned idx)
 {
     if (idx >= l->len)
         return -1;
@@ -13,7 +13,7 @@ get_char(struct line * l, unsigned idx)
 }
 
 bool
-is_char_at_idx(struct line * l, unsigned idx, char expected)
+is_char_at_idx(const struct line * l, unsigned idx, char expected)
 {
     if (idx >= l->len)
         return false;
@@ -22,7 +22,7 @@ is_char_at_idx(struct line * l, unsigned idx, char expected)
 }
 
 bool
-get_number(struct line * l, unsigned * cur_pos, unsigned * out_num)
+get_number(const struct line * l, unsigned * cur_pos, unsigned * out_num)
 {
     unsigned num = 0;
     unsigned pos = *cur_pos;
@@ -51,7 +51,7 @@ get_number(struct line * l, unsigned * cur_pos, unsigned * out_num)
 }
 
 bool
-line_starts_with_string(struct line * l, const char * s)
+line_starts_with_string(const struct line * l, const char * s)
 {
     if (l->data == NULL)
         return false;

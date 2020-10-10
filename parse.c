@@ -13,100 +13,100 @@
 #include "na_string.h"
 
 static bool
-is_hunk_header(struct line * l)
+is_hunk_header(const struct line * l)
 {
     /* Format is @@ -<NUM>,<NUM> +<NUM>,<NUM> @@ */
     return is_char_at_idx(l, 0, '@') && is_char_at_idx(l, 1, '@');
 }
 
 static bool
-is_diff_header(struct line *l)
+is_diff_header(const struct line * l)
 {
     /* Format is diff --git <filename> <filename> */
     return line_starts_with_string(l, "diff --git ");
 }
 
 static bool
-read_old_mode(struct line * l)
+read_old_mode(const struct line * l)
 {
     return line_starts_with_string(l, "old mode");
 }
 
 static bool
-read_new_mode(struct line * l)
+read_new_mode(const struct line * l)
 {
     /* TODO also look at the mode */
     return line_starts_with_string(l, "new mode");
 }
 
 static bool
-read_copy_from(struct line * l)
+read_copy_from(const struct line * l)
 {
     return line_starts_with_string(l, "copy from");
 }
 
 static bool
-read_copy_to(struct line * l)
+read_copy_to(const struct line * l)
 {
     return line_starts_with_string(l, "copy to");
 }
 
 static bool
-read_index_line(struct line * l)
+read_index_line(const struct line * l)
 {
     return line_starts_with_string(l, "index");
 }
 
 static bool
-is_post_image_add(struct line * l)
+is_post_image_add(const struct line * l)
 {
     return is_char_at_idx(l, 0, '+');
 }
 
 static int
-is_pre_image_add(struct line * l)
+is_pre_image_add(const struct line * l)
 {
     return is_char_at_idx(l, 0, '-');
 }
 
 static bool
-is_extended_header_new_line(struct line * l)
+is_extended_header_new_line(const struct line * l)
 {
     return line_starts_with_string(l, "new file");
 }
 
 static bool
-read_delete_line(struct line * l)
+read_delete_line(const struct line * l)
 {
     return line_starts_with_string(l, "delete");
 }
 
 static bool
-is_similarity_index_line(struct line * l)
+is_similarity_index_line(const struct line * l)
 {
     return line_starts_with_string(l, "similarity index");
 }
 
 static bool
-is_rename_from_line(struct line * l)
+is_rename_from_line(const struct line * l)
 {
     return line_starts_with_string(l, "rename from");
 }
 
 static bool
-is_rename_to_line(struct line * l)
+is_rename_to_line(const struct line * l)
 {
     return line_starts_with_string(l, "rename to");
 }
 
 static bool
-is_dissimiliarity_index_line(struct line * l)
+is_dissimiliarity_index_line(const struct line * l)
 {
     return line_starts_with_string(l, "dissimilarity index");
 }
 
 static bool
-is_binary_file(struct line * l)
+is_binary_file(const struct line * l)
 {
     /* TODO Verify that this is the only format of Binary file output. Also add filename checks */
     return line_starts_with_string(l, "Binary files ");
@@ -213,7 +213,7 @@ read_post_img_line(struct line *l)
  * If number-of-lines not shown it means that it is 0.
  */
 static bool
-set_hunk_header(struct hunk * h, struct line * l)
+set_hunk_header(struct hunk * h, const struct line * l)
 {
     /* @@ -1,8 +1 @@ */
     unsigned i = 0;
@@ -407,7 +407,7 @@ parse_start(struct diff_array * da)
     struct diff * d = NULL;
     struct hunk * h = NULL;
     for (;;) {
-        struct line * l = stdin_read_line();
+        l = stdin_read_line();
 
         switch (state) {
         case STATE_EXPECT_DIFF:
