@@ -268,7 +268,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
         }
 
         /* It could be that we are ending with a pre or a post instead of a normal.
-         * Then we need to make sure we are not missin to add any pad lines */
+         * Then we need to make sure we are not missing to add any pad lines */
         if (num_pre_lines || num_post_lines) {
             if (num_pre_lines > num_post_lines) {
                 /* more pre than post, pad with post lines. */
