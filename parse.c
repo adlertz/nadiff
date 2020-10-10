@@ -284,7 +284,8 @@ set_diff_header(struct diff * d, struct line * hdr)
 
     while (true) {
         int ch = get_char(hdr, cur_pos);
-        try_ret_int(ch);
+        if (ch < 0)
+            return false;
 
         if (ch == ' ')
             break;
