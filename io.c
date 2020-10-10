@@ -28,12 +28,16 @@ stdin_read_line(void)
         return &l;
 
     /* in case we can't read complete line */
-    buf[MAX_LINE_SIZE - 1] = '\n';
+    buf[MAX_LINE_SIZE - 1] = '\0';
 
     /* get the length of the buffer, i.e. how much we've read */
     size_t buf_len = strlen(buf);
 
-    if (buf[buf_len - 1] == '\n') {
+    /* replace '\n' with '\0' */
+    if (buf[buf_len - 1] == '\n')
+        buf[buf_len - 1] = '\0';
+
+    if (buf[buf_len - 1] == '\0') {
         l.len = buf_len;
         l.data = buf;
     }

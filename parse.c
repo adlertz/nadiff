@@ -204,6 +204,26 @@ read_post_img_line(struct line *l)
     return true;
 }
 
+
+/*
+ * NOTE: This function will exit program if allocation fails.
+ * 'len' should include space for '\0' in the end.
+ */
+static char *
+allocate_string(const struct line * l, unsigned offset, unsigned len)
+{
+    char * name = malloc(sizeof(char) * len);
+    if (name == NULL) {
+        na_printf("malloc failed when using line at row %u.\n", l->row);
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(name, l->data + offset, len);
+    /* most strings we copy end with '\0' but some don't, always add '\0' as the final character */
+    name[len - 1] = '\0';
+    return name;
+}
+
 /*
  * It is in the format @@ from-file-range to-file-range @@ [header].
  * The from-file-range is in the form -<start line>,<number of lines>, and to-file-range is
@@ -259,31 +279,42 @@ set_hunk_header(struct hunk * h, const struct line * l)
     /* get optional section name */
     if (i + 1 < l->len) {
         try_ret(l->data[i++] == ' ');
-        unsigned size = l->len - i;
-        char * section = malloc(sizeof(char) * size);
-        memcpy(section, l->data + i, size - 1);
-        section[size - 1] = '\0';
-        h->section_name = section;
+        h->section_name = allocate_string(l, i, l->len - i);
     }
 
     return true;
 }
 
+static char *
+find_short_name(char * name, unsigned len)
+{
+    /* go backwards through name to (potentially) find last '/' */
+    char * short_name = name;
+    for (int i = len - 1; i > 0; i--) {
+        if (name[i] == '/') {
+            short_name = &name[i+1];
+            break;
+        }
+    }
+    return short_name;
+}
+
 static bool
-set_diff_header(struct diff * d, struct line * hdr)
+set_diff_header(struct diff * d, struct line * l)
 {
     /* we only accept git diff -p, where -p is default */
     const char * diff_header_start = "diff --git ";
     unsigned i = 0;
     for (; i < strlen(diff_header_start); ++i)
-        try_ret(is_char_at_idx(hdr, i, diff_header_start[i]));
+        try_ret(is_char_at_idx(l, i, diff_header_start[i]));
 
-    /* pre image name */
+    /* find pre image name and post image name */
     unsigned start_pos = i;
     unsigned cur_pos = start_pos;
 
+    /* iterate until we find space */
     while (true) {
-        int ch = get_char(hdr, cur_pos);
+        int ch = get_char(l, cur_pos);
         if (ch < 0)
             return false;
 
@@ -293,47 +324,22 @@ set_diff_header(struct diff * d, struct line * hdr)
         cur_pos++;
     }
 
-    /* I think this is a bit ugly, we should +1 on pre_image_size instead to make up for the \0 */
+    /* Add one for missing '\0' */
+    unsigned pre_img_size = cur_pos - start_pos + 1;
+    char * pre_img_name = allocate_string(l, start_pos, pre_img_size);
+
+    /* move to character after space */
     cur_pos++;
 
-    unsigned pre_image_size = cur_pos - start_pos;
-    char * pre_img_name = malloc(sizeof(char) * pre_image_size);
-    memcpy(pre_img_name, hdr->data + start_pos, pre_image_size - 1);
-    pre_img_name[pre_image_size - 1] = '\0';
-
-    /* go backwards through pre_img_name to (potentially) find last '/' */
-    char * short_pre_img_name = pre_img_name;
-    for (int b = pre_image_size - 1; b > 0; b--) {
-        if (pre_img_name[b] == '/') {
-            short_pre_img_name = &pre_img_name[b+1];
-            break;
-        }
-    }
-
-    /* post image name */
-    start_pos = cur_pos;
-    cur_pos = hdr->len;
-
-    unsigned post_image_size = cur_pos - start_pos;
-    char * post_img_name = malloc(sizeof(char) * post_image_size);
-    memcpy(post_img_name, hdr->data + start_pos, post_image_size - 1);
-    post_img_name[post_image_size - 1] = '\0';
-
-    /* go backwards through post_img_name to (potentially) find last '/' */
-    char * short_post_img_name = post_img_name;
-    for (int b = post_image_size - 1; b > 0; b--) {
-        if (post_img_name[b] == '/') {
-            short_post_img_name = &post_img_name[b+1];
-            break;
-        }
-    }
+    unsigned post_img_size = l->len - cur_pos;
+    char * post_img_name = allocate_string(l, cur_pos, post_img_size);
 
     *d = (struct diff) {
         .ha = {0},
         .pre_img_name = pre_img_name,
-        .short_pre_img_name = short_pre_img_name,
-        .short_post_img_name = short_post_img_name,
         .post_img_name = post_img_name,
+        .short_pre_img_name = find_short_name(pre_img_name, pre_img_size),
+        .short_post_img_name = find_short_name(post_img_name, post_img_size)
     };
 
     return true;
@@ -342,17 +348,9 @@ set_diff_header(struct diff * d, struct line * hdr)
 static char *
 extract_and_allocate_code_line(struct line * l)
 {
-    /* discard first char: '+', '-' or ' ' from size */
-    unsigned size = l->len - 1;
-    /* start after '+', '-' or ' ' */
-    char * start = l->data + 1;
-    char * line = malloc(sizeof(char) * size);
-
-    /* we don't need to copy last character since it will be changed from '\n' to '\0' anyway */
-    memcpy(line, start, size - 1);
-    line[size - 1] = '\0';
-
-    return line;
+    /* discard first char: '+', '-' or ' ' from size and start */
+    unsigned len = l->len - 1;
+    return allocate_string(l, 1, len);
 }
 
 static enum hunk_line_type get_hunk_line_type(struct line * l)
