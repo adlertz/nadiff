@@ -128,7 +128,7 @@ convert_tabs(char ** data, unsigned * len)
 
 static void
 render_section_name(char * section_name, struct render_line_array * a0,
-    struct render_line_array * a1, bool first_section)
+    struct render_line_array * a1, bool is_first_section)
 {
     if (section_name == NULL)
         return;
@@ -138,7 +138,7 @@ render_section_name(char * section_name, struct render_line_array * a0,
     convert_tabs(&section_name, &len);
 
     /* add some padding before the next section */
-    if (!first_section) {
+    if (!is_first_section) {
         struct render_line * l = alloc_render_line(a0);
         l->type = RENDER_LINE_SPACE;
         l = alloc_render_line(a0);
@@ -171,7 +171,8 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
     for (unsigned i = 0; i < ha->size; ++i) {
         struct hunk * h = &ha->data[i];
 
-        render_section_name(h->section_name, a0, a1, i == 0);
+        bool is_first_section = i == 0;
+        render_section_name(h->section_name, a0, a1, is_first_section);
 
         struct hunk_line_array const * hla = &h->hla;
         unsigned pre_line_nr = h->pre_line_nr;
