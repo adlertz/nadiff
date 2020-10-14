@@ -1,7 +1,6 @@
 #ifndef _NADIFF_TYPES_H_
 #define _NADIFF_TYPES_H_
 
-#include <stdint.h>
 #include <stdbool.h>
 
 // TODO create macro of arrays and alloc functions

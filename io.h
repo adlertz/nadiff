@@ -1,8 +1,6 @@
 #ifndef _NADIFF_IO_H_
 #define _NADIFF_IO_H_
 
-#include <stdint.h>
-
 struct line {
   char * data;
   unsigned len;
