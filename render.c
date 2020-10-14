@@ -73,17 +73,17 @@ draw_list(struct diff_array * da, struct window * list)
         if ((i - list_visible_start + 3) > list->br.y)
             break;
 
-        if (diff_idx == i)
+        if (diff_idx == i) {
             vt100_set_inverted_colors();
-        else
+        } else {
             vt100_set_default_colors();
+        }
 
         vt100_set_pos(list->tl.x, list->tl.y + i - list_visible_start + 2);
 
-
-        if (strcmp(d->short_pre_img_name, d->short_post_img_name) == 0)
+        if (strcmp(d->short_pre_img_name, d->short_post_img_name) == 0) {
             vt100_write(d->short_pre_img_name, strlen(d->short_pre_img_name), list_width);
-        else {
+        } else {
             char name[200];
             snprintf(name, 200, "%s -> %s", d->short_pre_img_name, d->short_post_img_name);
             vt100_write(name, strlen(name), list_width);
@@ -139,14 +139,11 @@ render_section_name(char * section_name, struct render_line_array * a0,
 
     /* add some padding before the next section */
     if (!is_first_section) {
-        struct render_line * l = alloc_render_line(a0);
-        l->type = RENDER_LINE_SPACE;
-        l = alloc_render_line(a0);
-        l->type = RENDER_LINE_SPACE;
-        l = alloc_render_line(a1);
-        l->type = RENDER_LINE_SPACE;
-        l = alloc_render_line(a1);
-        l->type = RENDER_LINE_SPACE;
+        for (unsigned i = 0; i < 2; ++i) {
+            struct render_line * l0 = alloc_render_line(a0);
+            struct render_line * l1 = alloc_render_line(a1);
+            l0->type = l1->type = RENDER_LINE_SPACE;
+        }
     }
 
     struct render_line * l0 = alloc_render_line(a0);
