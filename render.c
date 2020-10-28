@@ -160,6 +160,9 @@ render_section_name(char * section_name, struct render_line_array * a0,
 static bool
 populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
 {
+    if (p->is_populated)
+        return true;
+
     enum { STATE_NORMAL, STATE_PRE, STATE_POST } state = STATE_NORMAL;
     struct render_line_array * a0 = &p->a0;
     struct render_line_array * a1 = &p->a1;
@@ -513,8 +516,8 @@ update_display(struct diff_array * da, struct render_line_pair_array * pa)
     struct diff * diff = &da->data[diff_idx];
 
     struct render_line_pair * p = &pa->data[diff_idx];
-    if (!p->is_populated)
-        try_ret(populate_render_line_arrays(diff, p));
+
+    try_ret(populate_render_line_arrays(diff, p));
 
     try_ret(draw_windows(diff, &diff0_window, &diff1_window, p));
 
