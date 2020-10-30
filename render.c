@@ -31,6 +31,9 @@ static struct window diff1_window;
 #define LINE_NBR_WIDTH 5
 #define MOVE_DIFF_LINES 5
 
+char error_msg[400];
+#define set_error_msg(fmt, ...) snprintf(error_msg, 400, "%s:%d " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
+
 struct coord {
     int x, y;
 };
@@ -219,7 +222,7 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                     /* pre -> normal. We should pad with post lines. */
                     if (num_post_lines) {
                         /* Sanity check, we should not have any post lines */
-                        na_printf("Should not encounter any post lines\n");
+                        set_error_msg("Should not encounter any post lines\n");
                         return false;
                     }
 
@@ -323,7 +326,7 @@ display_line_number(struct render_line * l, char * line, int window_width)
         snprintf(line, window_width, LINE_NUMBER, l->line_nr);
         break;
     default:
-        na_printf("Should not enter here with type: %u\n" , l->type);
+        set_error_msg("Should not enter here with type: %u\n" , l->type);
         return false;
     }
 
@@ -353,7 +356,7 @@ display_line(struct render_line * l, int window_width)
         vt100_set_red_foreground();
         break;
     default:
-        na_printf("Should not enter here with type: %u\n" , l->type);
+        set_error_msg("Should not enter here with type: %u\n" , l->type);
         return false;
     }
 
@@ -538,6 +541,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
         case KEY_TYPE_UNKNOWN:
             break;
         case KEY_TYPE_ERROR:
+            set_error_msg("Reading key failed\n");
             return false;
         case KEY_TYPE_EXIT:
             return true;
@@ -668,11 +672,13 @@ render(int fd, struct diff_array * da)
 
     if (!update_display(da, &pa)) {
         reset_vt100(fd);
+        fprintf(stderr, "%s", error_msg);
         return false;
     }
 
     if (!enter_loop(fd, da, &pa)) {
         reset_vt100(fd);
+        fprintf(stderr, "%s", error_msg);
         return false;
     }
 
