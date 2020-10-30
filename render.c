@@ -29,6 +29,7 @@ static struct window diff0_window;
 static struct window diff1_window;
 
 #define LINE_NBR_WIDTH 5
+#define MOVE_DIFF_LINES 5
 
 struct coord {
     int x, y;
@@ -579,7 +580,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
             break;
         case KEY_TYPE_MOVE_DIFFS_UP:
             if (diff_start > 0) {
-                diff_start -= 5;
+                diff_start -= MOVE_DIFF_LINES;
                 redraw = true;
             }
             break;
@@ -588,7 +589,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
             assert(diff0_window.br.y == diff1_window.br.y);
             assert(p->a0.size == p->a1.size);
             if (diff_start + diff0_window.br.y - 10 < p->a0.size) {
-                diff_start += 5;
+                diff_start += MOVE_DIFF_LINES;
                 redraw = true;
             }
             break;
