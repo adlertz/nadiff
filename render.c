@@ -534,7 +534,6 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
 
         switch (key) {
         case KEY_TYPE_NONE:
-            break;
         case KEY_TYPE_UNKNOWN:
             break;
         case KEY_TYPE_ERROR:
@@ -576,7 +575,6 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
             }
             break;
         case KEY_TYPE_PREV_CHANGE:
-            break;
         case KEY_TYPE_NEXT_CHANGE:
             break;
         case KEY_TYPE_MOVE_DIFFS_UP:
