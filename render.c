@@ -262,10 +262,10 @@ populate_render_line_arrays(struct diff * d, struct render_line_pair * p)
                 };
             }
 
-            if (l0 && l0->len > p->len_a0)
-                p->len_a0 = l0->len;
-            if (l1 && l1->len > p->len_a1)
-                p->len_a1 = l1->len;
+            if (l0 && l0->len > p->max_len_a0)
+                p->max_len_a0 = l0->len;
+            if (l1 && l1->len > p->max_len_a1)
+                p->max_len_a1 = l1->len;
         }
 
         /* It could be that we are ending with a pre or a post instead of a normal.
@@ -602,7 +602,8 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
         case KEY_TYPE_MOVE_DIFFS_RIGHT: {
             unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - LINE_NBR_WIDTH;
             unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - LINE_NBR_WIDTH;
-            if (horizontal_offset + diff0_offs < p->len_a0 || horizontal_offset + diff1_offs < p->len_a1) {
+            if (horizontal_offset + diff0_offs < p->max_len_a0 ||
+                horizontal_offset + diff1_offs < p->max_len_a1) {
                 horizontal_offset++;
                 redraw = true;
             }

@@ -105,8 +105,9 @@ struct render_line_pair {
     struct render_line_array a0;
     struct render_line_array a1;
 
-    unsigned len_a0;
-    unsigned len_a1;
+    /* the lines with the biggest length in a0 and a1 */
+    unsigned max_len_a0;
+    unsigned max_len_a1;
 };
 
 struct render_line_pair_array {
