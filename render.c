@@ -602,7 +602,7 @@ enter_loop(int fd, struct diff_array * da, struct render_line_pair_array * pa)
         case KEY_TYPE_MOVE_DIFFS_RIGHT: {
             unsigned diff0_offs = (diff0_window.br.x - diff0_window.tl.x) - LINE_NBR_WIDTH;
             unsigned diff1_offs = (diff1_window.br.x - diff1_window.tl.x) - LINE_NBR_WIDTH;
-            if (horizontal_offset + diff0_offs< p->len_a0 || horizontal_offset + diff1_offs < p->len_a1) {
+            if (horizontal_offset + diff0_offs < p->len_a0 || horizontal_offset + diff1_offs < p->len_a1) {
                 horizontal_offset++;
                 redraw = true;
             }
@@ -665,7 +665,7 @@ render(int fd, struct diff_array * da)
     for (unsigned i = 0; i < da->size; ++i)
         alloc_render_line_pair(&pa);
 
-    if(!update_display(da, &pa)) {
+    if (!update_display(da, &pa)) {
         reset_vt100(fd);
         return false;
     }
