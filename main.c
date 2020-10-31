@@ -10,7 +10,7 @@
 #include "render.h"
 #include "error.h"
 
-const char * semantic_version = "1.0.0";
+const char * semantic_version = "1.1.0";
 
 static void print_help()
 {
@@ -27,10 +27,10 @@ static void print_help()
     printf("Navigation:\n");
     printf("    n           Next diff.\n");
     printf("    N           Previous diff.\n");
-    printf("    d           Scroll up in both views.\n");
-    printf("    c           Scroll down in both views.\n");
-    printf("    w           Scroll left in both views.\n");
-    printf("    e           Scroll right in both views.\n");
+    printf("    k/d         Scroll up in both views.\n");
+    printf("    j/c         Scroll down in both views.\n");
+    printf("    h/w         Scroll left in both views.\n");
+    printf("    l/e         Scroll right in both views.\n");
     printf("    q           Quit.\n");
     printf("\n");
     printf("Options:\n");
