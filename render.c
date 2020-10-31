@@ -16,6 +16,14 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+struct coord {
+    int x, y;
+};
+
+struct window {
+    struct coord tl, br;
+};
+
 static bool redraw = false;
 static unsigned diff_idx = 0;
 static unsigned diff_start = 0;
@@ -34,14 +42,6 @@ static struct window diff1_window;
 char error_msg[400];
 #define set_error_msg(fmt, ...) \
     snprintf(error_msg, sizeof(error_msg), "%s:%d " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
-
-struct coord {
-    int x, y;
-};
-
-struct window {
-    struct coord tl, br;
-};
 
 /* Custom strlen function that takes tabs into consideration */
 static size_t
