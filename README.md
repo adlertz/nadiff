@@ -2,7 +2,7 @@
 
 A side-by-side git diff viewer for a VT100 compatible linux terminal.
 
-NOTE: Tabs are displayed as `~   `
+NOTE: Tabs are displayed as tilde with 3 spaces, `~   `.
 
 ## Screenshot
 
