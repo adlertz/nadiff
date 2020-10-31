@@ -1,0 +1,16 @@
+A side-by-side git diff viewer for a VT100 compatible linux terminal.
+
+Build and install
+
+    # build
+    make
+
+    # build and install to /usr/local/bin/
+    sudo make install
+
+    # uninstall
+    sudo make uninstall
+
+Usage and navigation
+
+    See 'nadiff --help'

@@ -1,6 +1,5 @@
 #include "parse.h"
 
-#include <unistd.h> // isatty()
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -487,12 +486,5 @@ parse_start(struct diff_array * da)
 bool
 parse_stdin(struct diff_array * da)
 {
-    if (isatty(fileno(stdin))) {
-        na_printf("stdin should be a pipe! E.g. do 'git diff | nadiff'\n");
-        return false;
-    }
-
-    try_ret(parse_start(da));
-
-    return true;
+    return parse_start(da);
 }
