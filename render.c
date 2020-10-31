@@ -32,7 +32,8 @@ static struct window diff1_window;
 #define MOVE_DIFF_LINES 5
 
 char error_msg[400];
-#define set_error_msg(fmt, ...) snprintf(error_msg, 400, "%s:%d " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
+#define set_error_msg(fmt, ...) \
+    snprintf(error_msg, sizeof(error_msg), "%s:%d " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
 
 struct coord {
     int x, y;
