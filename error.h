@@ -10,6 +10,4 @@
             return false;   \
     } while (0);
 
-#define na_printf(fmt, ...) fprintf(stderr, "%s:%d " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
-
 #endif

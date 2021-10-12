@@ -72,13 +72,13 @@ main(int argc, char * argv[])
 
     FILE * tty = fopen("/dev/tty", "r");
     if (!tty) {
-        na_printf("Unable to open /dev/tty. Needed when re-setting stdin\n");
+        fprintf(stderr, "Unable to open /dev/tty. Needed when re-setting stdin\n");
         return EXIT_FAILURE;
     }
 
     int fd = fileno(tty);
     if (fd < 0) {
-        na_printf("Unable to get file descriptor for /dev/tty\n");
+        fprintf(stderr, "Unable to get file descriptor for /dev/tty\n");
         fclose(tty);
         return EXIT_FAILURE;
     }

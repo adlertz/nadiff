@@ -171,7 +171,7 @@ vt100_get_window_size(struct vt100_dims * d)
     struct winsize ws;
 
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
-        na_printf("Could not get terminal size\n");
+        fprintf(stderr, "Could not get terminal size\n");
         return false;
     } else {
         d->cols = ws.ws_col;
