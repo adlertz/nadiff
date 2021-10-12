@@ -30,7 +30,7 @@ get_number(const struct line * l, unsigned * cur_pos, unsigned * out_num)
     while (true) {
         int digit = get_char(l, pos);
         if (digit < 0) {
-            na_printf("Failed to parse number at row %u\n", l->row);
+            na_printf("Failed to parse number at line %u\n", l->row);
             return false;
         }
 

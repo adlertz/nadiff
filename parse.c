@@ -135,14 +135,14 @@ read_extended_header_lines(struct diff * d)
             /* if old mode, we also expect new mode */
             l = stdin_read_line();
             if (!read_new_mode(l)) {
-                na_printf("Expected new mode header line at row %u\n", l->row);
+                na_printf("Expected new mode header line at line %u\n", l->row);
                 return false;
             }
         } else if (read_copy_from(l)) {
             /* if copy from then we expect copy to */
             l = stdin_read_line();
             if (!read_copy_to(l)) {
-                na_printf("Expected copy to header line at row %u\n", l->row);
+                na_printf("Expected copy to header line at line %u\n", l->row);
                 return false;
             }
         } else if (is_extended_header_new_line(l)) {
@@ -153,12 +153,12 @@ read_extended_header_lines(struct diff * d)
             /* expect rename from, and rename to */
             l = stdin_read_line();
             if (!is_rename_from_line(l)) {
-                na_printf("Expected rename from line at row %u\n", l->row);
+                na_printf("Expected rename from line at line %u\n", l->row);
                 return false;
             }
             l = stdin_read_line();
             if (!is_rename_to_line(l)) {
-                na_printf("Expected rename to line at row %u\n", l->row);
+                na_printf("Expected rename to line at line %u\n", l->row);
                 return false;
             }
         } else if (read_index_line(l)) {
@@ -213,7 +213,7 @@ allocate_string(const struct line * l, unsigned offset, unsigned len)
 {
     char * name = malloc(sizeof(char) * len);
     if (name == NULL) {
-        na_printf("malloc failed when using line at row %u.\n", l->row);
+        na_printf("malloc failed when using line at line %u.\n", l->row);
         exit(EXIT_FAILURE);
     }
 
@@ -398,13 +398,13 @@ parse_start(struct diff_array * da)
         switch (state) {
         case STATE_EXPECT_DIFF:
             if (!is_diff_header(l)) {
-                na_printf("Expected diff header at row %u\n", l->row);
+                na_printf("Expected diff header at line %u\n", l->row);
                 return false;
             }
 
             d = alloc_diff(da);
             if (!set_diff_header(d, l)) {
-                na_printf("Could not set diff header at row %u\n", l->row);
+                na_printf("Could not set diff header at line %u\n", l->row);
                 return false;
             }
 
@@ -421,13 +421,13 @@ parse_start(struct diff_array * da)
             } else {
                 l = stdin_read_line();
                 if (!read_pre_img_line(l)) {
-                    na_printf("Could not parse pre image line at row %u \n", l->row);
+                    na_printf("Could not parse pre image line at line %u \n", l->row);
                     return false;
                 }
 
                 l = stdin_read_line();
                 if (!read_post_img_line(l)) {
-                    na_printf("Could not parse post image line at row %u \n", l->row);
+                    na_printf("Could not parse post image line at line %u \n", l->row);
                     return false;
                 }
                 state = STATE_EXPECT_HUNK;
@@ -437,14 +437,14 @@ parse_start(struct diff_array * da)
 
         case STATE_EXPECT_HUNK:
             if (!is_hunk_header(l)) {
-                na_printf("Expected hunk header at row %u\n", l->row);
+                na_printf("Expected hunk header at line %u\n", l->row);
                 return false;
             }
 
             h = alloc_hunk(&d->ha);
 
             if (!set_hunk_header(h, l)) {
-                na_printf("Failed to set hunk header at row %u\n", l->row);
+                na_printf("Failed to set hunk header at line %u\n", l->row);
                 return false;
             }
 
