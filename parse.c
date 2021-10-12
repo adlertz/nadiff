@@ -26,32 +26,32 @@ is_diff_header(const struct line * l)
 }
 
 static bool
-read_old_mode(const struct line * l)
+is_old_mode(const struct line * l)
 {
     return line_starts_with_string(l, "old mode");
 }
 
 static bool
-read_new_mode(const struct line * l)
+is_new_mode(const struct line * l)
 {
     /* TODO also look at the mode */
     return line_starts_with_string(l, "new mode");
 }
 
 static bool
-read_copy_from(const struct line * l)
+is_copy_from(const struct line * l)
 {
     return line_starts_with_string(l, "copy from");
 }
 
 static bool
-read_copy_to(const struct line * l)
+is_copy_to(const struct line * l)
 {
     return line_starts_with_string(l, "copy to");
 }
 
 static bool
-read_index_line(const struct line * l)
+is_index_line(const struct line * l)
 {
     return line_starts_with_string(l, "index");
 }
@@ -75,7 +75,7 @@ is_extended_header_new_line(const struct line * l)
 }
 
 static bool
-read_delete_line(const struct line * l)
+is_delete_line(const struct line * l)
 {
     return line_starts_with_string(l, "delete");
 }
@@ -131,23 +131,23 @@ read_extended_header_lines(struct diff * d)
     d->status = DIFF_STATUS_CHANGED;
     for (;;) {
         struct line * l = stdin_read_line();
-        if (read_old_mode(l)) {
+        if (is_old_mode(l)) {
             /* if old mode, we also expect new mode */
             l = stdin_read_line();
-            if (!read_new_mode(l)) {
+            if (!is_new_mode(l)) {
                 na_printf("Expected new mode header line at line %u\n", l->row);
                 return false;
             }
-        } else if (read_copy_from(l)) {
+        } else if (is_copy_from(l)) {
             /* if copy from then we expect copy to */
             l = stdin_read_line();
-            if (!read_copy_to(l)) {
+            if (!is_copy_to(l)) {
                 na_printf("Expected copy to header line at line %u\n", l->row);
                 return false;
             }
         } else if (is_extended_header_new_line(l)) {
             d->status = DIFF_STATUS_NEW;
-        } else if (read_delete_line(l)) {
+        } else if (is_delete_line(l)) {
             d->status = DIFF_STATUS_DELETED;
         } else if (is_similarity_index_line(l) || is_dissimiliarity_index_line(l)) {
             /* expect rename from, and rename to */
@@ -161,7 +161,7 @@ read_extended_header_lines(struct diff * d)
                 na_printf("Expected rename to line at line %u\n", l->row);
                 return false;
             }
-        } else if (read_index_line(l)) {
+        } else if (is_index_line(l)) {
             /* expect this extended header to be last */
             l = stdin_read_line();
 
@@ -184,7 +184,7 @@ read_extended_header_lines(struct diff * d)
 }
 
 static bool
-read_pre_img_line(struct line *l)
+is_pre_img_line(struct line *l)
 {
     if (l->data == NULL)
         return false;
@@ -194,7 +194,7 @@ read_pre_img_line(struct line *l)
 }
 
 static bool
-read_post_img_line(struct line *l)
+is_post_img_line(struct line *l)
 {
     if (l->data == NULL)
         return false;
@@ -420,13 +420,13 @@ parse_start(struct diff_array * da)
                 /* Goto next diff */
             } else {
                 l = stdin_read_line();
-                if (!read_pre_img_line(l)) {
+                if (!is_pre_img_line(l)) {
                     na_printf("Could not parse pre image line at line %u \n", l->row);
                     return false;
                 }
 
                 l = stdin_read_line();
-                if (!read_post_img_line(l)) {
+                if (!is_post_img_line(l)) {
                     na_printf("Could not parse post image line at line %u \n", l->row);
                     return false;
                 }
