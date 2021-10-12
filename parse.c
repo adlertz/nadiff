@@ -388,17 +388,10 @@ parse_start(struct diff_array * da)
 {
     enum { STATE_EXPECT_DIFF, STATE_EXPECT_HUNK, STATE_ACCEPT_ALL } state = STATE_EXPECT_DIFF;
 
-    struct line * l = stdin_read_line();
-
-    if (l->data == NULL) {
-        na_printf("No data to parse\n");
-        return false;
-    }
-
-    stdin_reset_cur_line();
-
     struct diff * d = NULL;
     struct hunk * h = NULL;
+    struct line * l = NULL;
+
     for (;;) {
         l = stdin_read_line();
 
