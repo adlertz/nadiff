@@ -362,7 +362,7 @@ static enum hunk_line_type get_hunk_line_type(struct line * l)
         return NEUTRAL_LINE;
 }
 
-static bool
+static void
 read_hunk_line(struct line * l, struct hunk * h)
 {
     enum hunk_line_type lt = get_hunk_line_type(l);
@@ -378,8 +378,6 @@ read_hunk_line(struct line * l, struct hunk * h)
     }
 
     *hl = (struct hunk_line) { .line = code, .len = len, .type = lt };
-
-    return true;
 }
 
 bool
@@ -448,7 +446,11 @@ parse_stdin(struct diff_array * da)
             }
 
             l = stdin_read_line();
-            try_ret(read_hunk_line(l, h));
+            if (l->data == NULL) {
+                fprintf(stderr, "Expected hunk line at line %u\n", l->row);
+                return false;
+            }
+            read_hunk_line(l, h);
 
             state = STATE_ACCEPT_ALL;
 
@@ -465,7 +467,7 @@ parse_stdin(struct diff_array * da)
                 state = STATE_EXPECT_HUNK;
                 stdin_reset_cur_line();
             } else {
-                try_ret(read_hunk_line(l, h));
+                read_hunk_line(l, h);
             }
 
             break;
