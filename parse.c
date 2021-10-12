@@ -382,9 +382,8 @@ read_hunk_line(struct line * l, struct hunk * h)
     return true;
 }
 
-
-static bool
-parse_start(struct diff_array * da)
+bool
+parse_stdin(struct diff_array * da)
 {
     enum { STATE_EXPECT_DIFF, STATE_EXPECT_HUNK, STATE_ACCEPT_ALL } state = STATE_EXPECT_DIFF;
 
@@ -474,10 +473,4 @@ parse_start(struct diff_array * da)
     }
 
     return true;
-}
-
-bool
-parse_stdin(struct diff_array * da)
-{
-    return parse_start(da);
 }
