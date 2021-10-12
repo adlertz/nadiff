@@ -10,7 +10,7 @@
 static char buf[MAX_LINE_SIZE];
 static struct line l;
 static bool use_prev_line = false;
-static unsigned row = 0;
+static unsigned row = 1;
 
 struct line *
 stdin_read_line(void)
